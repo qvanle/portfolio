@@ -47,56 +47,43 @@ export default function Hero() {
 								.
 							</p>
 						</section>
-						<section className='relative z-10 flex space-x-4 items-center text-sm'>
-							<div>
-								<p>More about me: </p>
-								<div className='flex -ml-2'>
-									<Link
-										href='https://www.linkedin.com/in/dale-larroder/'
-										target='_blank'
-										rel='noreferrer'
-										aria-label='linkedin'
-										data-skip-splash-cursor
-									>
-										<LinkedinIcon className='h-9 w-9' />
-									</Link>
-									<Link
-										href='https://github.com/dlarroder'
-										target='_blank'
-										rel='noreferrer'
-										aria-label='github'
-										data-skip-splash-cursor
-									>
-										<GithubIcon className='h-9 w-9' />
-									</Link>
-									<Link
-										href='https://x.com/dalelarroder'
-										target='_blank'
-										rel='noreferrer'
-										aria-label='twitter'
-										data-skip-splash-cursor
-									>
-										<XIcon className='h-9 w-9' />
-									</Link>
-									<Link
-										href='mailto:hi@dalelarroder.com'
-										aria-label='email'
-										rel='noreferrer'
-										data-skip-splash-cursor
-									>
-										<AtSignIcon className='h-9 w-9' />
-									</Link>
-								</div>
-							</div>
-							<div className='h-14 border-l border-gray-300' />
-							<div
-								className='flex flex-wrap space-x-3 space-y-1'
-								data-skip-splash-cursor
-							>
-								<Link href='/projects'>/projects</Link>
-								<Link href='/thoughts'>/thoughts</Link>
-								<Link href='/uses'>/uses</Link>
-								<Link href='/stats'>/stats</Link>
+						<section className='relative z-10 flex items-center text-sm'>
+							<div className='flex -ml-2'>
+								<Link
+									href='https://www.linkedin.com/in/dale-larroder/'
+									target='_blank'
+									rel='noreferrer'
+									aria-label='linkedin'
+									data-skip-splash-cursor
+								>
+									<LinkedinIcon className='h-9 w-9' />
+								</Link>
+								<Link
+									href='https://github.com/dlarroder'
+									target='_blank'
+									rel='noreferrer'
+									aria-label='github'
+									data-skip-splash-cursor
+								>
+									<GithubIcon className='h-9 w-9' />
+								</Link>
+								<Link
+									href='https://x.com/dalelarroder'
+									target='_blank'
+									rel='noreferrer'
+									aria-label='twitter'
+									data-skip-splash-cursor
+								>
+									<XIcon className='h-9 w-9' />
+								</Link>
+								<Link
+									href='mailto:hi@dalelarroder.com'
+									aria-label='email'
+									rel='noreferrer'
+									data-skip-splash-cursor
+								>
+									<AtSignIcon className='h-9 w-9' />
+								</Link>
 							</div>
 						</section>
 					</div>

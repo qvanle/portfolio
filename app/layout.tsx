@@ -1,5 +1,4 @@
 import Analytics from 'app/components/analytics/analytics';
-import LenisProvider from 'app/components/providers/LenisProvider';
 import ThemeProvider from 'app/components/providers/ThemeProvider';
 import type { Metadata } from 'next';
 import type { ReactNode } from 'react';
@@ -51,10 +50,8 @@ export default function RootLayout({ children }: RootLayoutProps) {
 					defaultTheme='dark'
 					themes={['dark', 'light']}
 				>
-					<LenisProvider>
-						<ThemeSwitch />
-						{children}
-					</LenisProvider>
+					<ThemeSwitch />
+					{children}
 					{process.env.NODE_ENV === 'production' && <Analytics />}
 				</ThemeProvider>
 			</body>

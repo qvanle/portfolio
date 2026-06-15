@@ -3,7 +3,6 @@
 import classNames from 'classnames';
 import type { Transition, Variants } from 'motion/react';
 import { motion, useAnimation } from 'motion/react';
-import type { HTMLAttributes } from 'react';
 import { forwardRef, useImperativeHandle, useRef } from 'react';
 
 interface MoonIconHandle {
@@ -11,8 +10,9 @@ interface MoonIconHandle {
 	stopAnimation: () => void;
 }
 
-interface MoonIconProps extends HTMLAttributes<HTMLDivElement> {
+interface MoonIconProps {
 	size?: number;
+	className?: string;
 }
 
 const svgVariants: Variants = {
@@ -30,7 +30,7 @@ const svgTransition: Transition = {
 };
 
 const MoonIcon = forwardRef<MoonIconHandle, MoonIconProps>(
-	({ onMouseEnter, onMouseLeave, className, size = 28, ...props }, ref) => {
+	({ className, size = 28 }, ref) => {
 		const controls = useAnimation();
 		const isControlledRef = useRef(false);
 
@@ -43,30 +43,12 @@ const MoonIcon = forwardRef<MoonIconHandle, MoonIconProps>(
 			};
 		});
 
-		const handleMouseEnter = (e: React.MouseEvent<HTMLDivElement>) => {
-			if (!isControlledRef.current) {
-				controls.start('animate');
-			} else {
-				onMouseEnter?.(e);
-			}
-		};
-
-		const handleMouseLeave = (e: React.MouseEvent<HTMLDivElement>) => {
-			if (!isControlledRef.current) {
-				controls.start('normal');
-			} else {
-				onMouseLeave?.(e);
-			}
-		};
 		return (
 			<div
 				className={classNames(
-					`cursor-pointer select-none p-2 hover:bg-accent rounded-md transition-colors duration-200 flex items-center justify-center`,
+					'flex items-center justify-center rounded-md p-2 transition-colors duration-200 hover:bg-accent',
 					className,
 				)}
-				onMouseEnter={handleMouseEnter}
-				onMouseLeave={handleMouseLeave}
-				{...props}
 			>
 				<motion.svg
 					xmlns='http://www.w3.org/2000/svg'
@@ -78,6 +60,8 @@ const MoonIcon = forwardRef<MoonIconHandle, MoonIconProps>(
 					strokeWidth='2'
 					strokeLinecap='round'
 					strokeLinejoin='round'
+					role='img'
+					aria-label='moon icon'
 					variants={svgVariants}
 					animate={controls}
 					transition={svgTransition}
