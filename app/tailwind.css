@@ -21,15 +21,15 @@
 }
 
 @theme inline {
-	--color-primary-100: #fdd1d9;
-	--color-primary-200: #fba4bc;
-	--color-primary-300: #f575a5;
-	--color-primary-400: #eb519b;
-	--color-primary-500: #de1d8d;
-	--color-primary-600: #be1588;
-	--color-primary-700: #9f0e7f;
-	--color-primary-800: #800972;
-	--color-primary-900: #6a0568;
+	--color-primary-100: #fef3c7;
+	--color-primary-200: #fde68a;
+	--color-primary-300: #fcd34d;
+	--color-primary-400: #fbbf24;
+	--color-primary-500: #f59e0b;
+	--color-primary-600: #d97706;
+	--color-primary-700: #b45309;
+	--color-primary-800: #92400e;
+	--color-primary-900: #78350f;
 
 	--animate-first: moveVertical 30s ease infinite;
 	--animate-second: moveInCircle 20s reverse infinite;
@@ -125,6 +125,30 @@ html {
 	view-transition-name: theme;
 }
 
+html[data-page-transition="forward"]::view-transition-old(root) {
+	animation: page-out-left 0.52s cubic-bezier(0.22, 0.61, 0.36, 1) both;
+	border: 1px solid
+		color-mix(in srgb, var(--color-primary-500) 28%, transparent);
+}
+
+html[data-page-transition="forward"]::view-transition-new(root) {
+	animation: page-in-right 0.52s cubic-bezier(0.22, 0.61, 0.36, 1) both;
+	border: 1px solid
+		color-mix(in srgb, var(--color-primary-500) 28%, transparent);
+}
+
+html[data-page-transition="backward"]::view-transition-old(root) {
+	animation: page-out-right 0.52s cubic-bezier(0.22, 0.61, 0.36, 1) both;
+	border: 1px solid
+		color-mix(in srgb, var(--color-primary-500) 28%, transparent);
+}
+
+html[data-page-transition="backward"]::view-transition-new(root) {
+	animation: page-in-left 0.52s cubic-bezier(0.22, 0.61, 0.36, 1) both;
+	border: 1px solid
+		color-mix(in srgb, var(--color-primary-500) 28%, transparent);
+}
+
 ::view-transition-old(theme),
 ::view-transition-new(theme) {
 	animation: none;
@@ -149,5 +173,49 @@ html {
 	}
 	to {
 		clip-path: circle(150% at top right);
+	}
+}
+
+@keyframes page-out-left {
+	from {
+		opacity: 1;
+		transform: translateX(0);
+	}
+	to {
+		opacity: 0;
+		transform: translateX(-8vw);
+	}
+}
+
+@keyframes page-in-right {
+	from {
+		opacity: 0;
+		transform: translateX(8vw);
+	}
+	to {
+		opacity: 1;
+		transform: translateX(0);
+	}
+}
+
+@keyframes page-out-right {
+	from {
+		opacity: 1;
+		transform: translateX(0);
+	}
+	to {
+		opacity: 0;
+		transform: translateX(8vw);
+	}
+}
+
+@keyframes page-in-left {
+	from {
+		opacity: 0;
+		transform: translateX(-8vw);
+	}
+	to {
+		opacity: 1;
+		transform: translateX(0);
 	}
 }
