@@ -1,13 +1,32 @@
+'use client';
+
 import Link from 'next/link';
-import { getHomePosts } from '../../data/posts';
+import { useMemo } from 'react';
+import type { SitePost } from '../../data/posts';
+import { getSiteCopy, localizePosts } from '../../data/site-copy';
 import Hero from '../hero/hero';
+import { useLanguage } from '../i18n/language-provider';
 import PageShell from '../site/page-shell';
 import PostList from '../site/post-list';
 import SectionHeading from '../site/section-heading';
 import SocialLinks from '../site/social-links';
 
-export default async function HomePage() {
-	const { featured, latest } = await getHomePosts();
+interface HomePageProps {
+	featured: SitePost[];
+	latest: SitePost[];
+}
+
+export default function HomePage({ featured, latest }: HomePageProps) {
+	const { language } = useLanguage();
+	const copy = getSiteCopy(language);
+	const localizedFeatured = useMemo(
+		() => localizePosts(featured, language),
+		[featured, language],
+	);
+	const localizedLatest = useMemo(
+		() => localizePosts(latest, language),
+		[latest, language],
+	);
 
 	return (
 		<PageShell>
@@ -16,57 +35,51 @@ export default async function HomePage() {
 
 				<section id='about' className='scroll-mt-24 px-0 pb-20 pt-4'>
 					<div className='max-w-4xl space-y-6'>
-						<SectionHeading title='About Me' />
+						<SectionHeading title={copy.home.about.title} />
 						<div className='space-y-5 text-base leading-8 text-black/72 dark:text-white/68 sm:text-lg'>
-							<p>
-								I&apos;m qvanle — founder of RotexAI, an AI workflow automation
-								platform aimed at optimizing costs for repetitive tasks. Having
-								learned so much from the tech community over the years, I built
-								this space not just as a portfolio, but to give back and share
-								my knowledge.
-							</p>
-							<p>
-								I believe everything must revolve around people; tools are
-								meaningless if their goal is not to serve humanity. My rule is
-								simple: before anyone else can use my products, I must be my own
-								first user. This site documents that process through notes on
-								engineering, automation workflows, and the lessons that come
-								with building tools for real use.
-							</p>
+							{copy.home.about.paragraphs.map((paragraph) => (
+								<p key={paragraph}>{paragraph}</p>
+							))}
 						</div>
 					</div>
 				</section>
 
 				<section id='featured' className='scroll-mt-24 pb-20 pt-4'>
 					<div className='max-w-5xl'>
-						<SectionHeading title='Featured' actionHref='/insights' />
-						<PostList posts={featured} />
+						<SectionHeading
+							title={copy.home.featured.title}
+							actionHref='/insights'
+							actionLabel={copy.home.featured.more}
+						/>
+						<PostList posts={localizedFeatured} locale={language} />
 					</div>
 				</section>
 
 				<section id='latest' className='scroll-mt-24 pb-20 pt-4'>
 					<div className='max-w-5xl'>
-						<SectionHeading title='Latest' actionHref='/insights' />
-						<PostList posts={latest} />
+						<SectionHeading
+							title={copy.home.latest.title}
+							actionHref='/insights'
+							actionLabel={copy.home.latest.more}
+						/>
+						<PostList posts={localizedLatest} locale={language} />
 					</div>
 				</section>
 
 				<section id='contact' className='scroll-mt-24 pb-12 pt-4'>
 					<div className='max-w-4xl space-y-6'>
-						<SectionHeading title='Get in Touch' />
+						<SectionHeading title={copy.home.contact.title} />
 						<p className='max-w-2xl text-base leading-8 text-black/70 dark:text-white/68 sm:text-lg'>
-							If something here helped you, send a note. I&apos;m always open to
-							engineering discussions, automation ideas, and thoughtful
-							feedback.
+							{copy.home.contact.intro}
 						</p>
 						<div className='space-y-4'>
 							<p className='text-sm uppercase tracking-[0.28em] text-black/40 dark:text-white/40'>
-								Direct links
+								{copy.home.contact.directLinks}
 							</p>
 							<SocialLinks />
 						</div>
 						<p className='text-sm leading-7 text-black/55 dark:text-white/50'>
-							Email:{' '}
+							{copy.home.contact.emailLabel}:{' '}
 							<Link
 								href='mailto:qvanle@rotexai.com'
 								className='text-current transition-colors hover:text-primary-500'

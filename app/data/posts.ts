@@ -148,9 +148,11 @@ async function fetchStrapiPosts(): Promise<SitePost[] | null> {
 		}
 
 		const payload = await response.json();
-		const entries = Array.isArray(payload?.data) ? payload.data : [];
+		const entries: StrapiPostRecord[] = Array.isArray(payload?.data)
+			? payload.data
+			: [];
 		const posts = entries
-			.map((entry: unknown) => normalizeStrapiPost(entry))
+			.map((entry) => normalizeStrapiPost(entry))
 			.filter((post): post is SitePost => post !== null);
 
 		return posts.length > 0 ? posts : null;
