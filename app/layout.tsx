@@ -1,5 +1,5 @@
-import Analytics from 'app/components/analytics/analytics';
 import ThemeProvider from 'app/components/providers/ThemeProvider';
+import classNames from 'classnames';
 import type { Metadata } from 'next';
 import type { ReactNode } from 'react';
 import ThemeSwitch from './components/layouts/theme-switch/theme-switch';
@@ -8,10 +8,11 @@ import './tailwind.css';
 
 export const metadata: Metadata = {
 	title: {
-		template: '%s | Dale Larroder',
-		default: 'Dale Larroder',
+		template: '%s | qvanle',
+		default: 'qvanle',
 	},
-	description: 'I build things for the web.',
+	description:
+		'A minimalist knowledge-sharing hub for engineering notes, automation workflows, and open-source tools.',
 	metadataBase: new URL('https://dalelarroder.com'),
 };
 
@@ -21,7 +22,11 @@ interface RootLayoutProps {
 
 export default function RootLayout({ children }: RootLayoutProps) {
 	return (
-		<html lang='en' suppressHydrationWarning className={mukta.className}>
+		<html
+			lang='en'
+			suppressHydrationWarning
+			className={classNames(mukta.className, 'scroll-smooth')}
+		>
 			<head>
 				<link
 					rel='apple-touch-icon'
@@ -42,9 +47,8 @@ export default function RootLayout({ children }: RootLayoutProps) {
 				/>
 				<meta name='msapplication-TileColor' content='#000000' />
 				<meta name='theme-color' content='#000000' />
-				<link rel='alternate' type='application/rss+xml' href='/feed.xml' />
 			</head>
-			<body className='bg-white text-black antialiased dark:bg-black dark:text-white selection:bg-primary-500 selection:text-white'>
+			<body className='bg-white text-black antialiased selection:bg-primary-500 selection:text-white dark:bg-black dark:text-white'>
 				<ThemeProvider
 					attribute='class'
 					defaultTheme='dark'
@@ -52,7 +56,6 @@ export default function RootLayout({ children }: RootLayoutProps) {
 				>
 					<ThemeSwitch />
 					{children}
-					{process.env.NODE_ENV === 'production' && <Analytics />}
 				</ThemeProvider>
 			</body>
 		</html>

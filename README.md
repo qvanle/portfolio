@@ -3,7 +3,6 @@
 - **Framework**: Next.js
 - **Deployment**: Vercel
 - **Styling**: Tailwind CSS
-- **Analytics**: LogRocket, Umami, Vercel Analytics, Speed Insights
 
 ## Running Locally
 
@@ -14,4 +13,4 @@ bun run dev
 
 ## Environment
 
-Copy `.env.example` to `.env.local` and fill in the analytics variables you use.
+Copy `.env.example` to `.env.local` if you want to add local environment values.
