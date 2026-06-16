@@ -1,3 +1,5 @@
+'use client';
+
 import Link from 'next/link';
 import { AtSignIcon } from '../layouts/icons/at-sign-icon';
 import { FacebookIcon } from '../layouts/icons/facebook-icon';

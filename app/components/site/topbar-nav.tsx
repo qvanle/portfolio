@@ -4,21 +4,14 @@ import classNames from 'classnames';
 import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
 import { useEffect, useMemo, useState } from 'react';
+import { getSiteCopy } from '../../data/site-copy';
+import { useLanguage } from '../i18n/language-provider';
 import { XIcon } from '../layouts/icons/x-icon';
 
 interface NavigationItem {
 	label: string;
 	href: string;
 }
-
-const navigationItems: NavigationItem[] = [
-	{ label: 'Home', href: '/' },
-	{ label: 'About Me', href: '/#about' },
-	{ label: 'Featured', href: '/#featured' },
-	{ label: 'Latest', href: '/#latest' },
-	{ label: 'Get in Touch', href: '/#contact' },
-	{ label: 'Insight', href: '/insights' },
-];
 
 function MenuIcon() {
 	return (
@@ -84,12 +77,25 @@ function NavItem({
 export default function TopbarNav() {
 	const pathname = usePathname();
 	const router = useRouter();
+	const { language } = useLanguage();
 	const [isOpen, setIsOpen] = useState(false);
 	const [activeHref, setActiveHref] = useState('/');
+	const copy = getSiteCopy(language);
 
 	const isInsightsRoute = useMemo(
 		() => pathname.startsWith('/insights'),
 		[pathname],
+	);
+	const navigationItems = useMemo<NavigationItem[]>(
+		() => [
+			{ label: copy.nav.home, href: '/' },
+			{ label: copy.nav.about, href: '/#about' },
+			{ label: copy.nav.featured, href: '/#featured' },
+			{ label: copy.nav.latest, href: '/#latest' },
+			{ label: copy.nav.contact, href: '/#contact' },
+			{ label: copy.nav.insight, href: '/insights' },
+		],
+		[copy],
 	);
 
 	useEffect(() => {
@@ -182,7 +188,7 @@ export default function TopbarNav() {
 			<div className='fixed inset-x-4 top-4 z-50 flex items-center justify-between gap-3 lg:hidden'>
 				<button
 					type='button'
-					aria-label='Open navigation'
+					aria-label={copy.controls.navOpenLabel}
 					aria-expanded={isOpen}
 					onClick={() => setIsOpen((value) => !value)}
 					className='inline-flex h-11 w-11 items-center justify-center rounded-full border border-black/10 bg-white/90 text-black shadow-lg shadow-black/5 backdrop-blur-md transition-colors hover:text-primary-500 dark:border-white/10 dark:bg-black/80 dark:text-white dark:shadow-black/30'
@@ -195,6 +201,9 @@ export default function TopbarNav() {
 			{isOpen ? (
 				<div className='fixed inset-0 z-40 bg-black/60 p-4 backdrop-blur-sm lg:hidden'>
 					<div className='mx-auto mt-16 max-w-md rounded-[2rem] border border-white/10 bg-black px-5 py-6 text-white shadow-2xl shadow-black/35'>
+						<p className='text-xs uppercase tracking-[0.35em] text-white/35'>
+							{copy.drawer.title}
+						</p>
 						<nav className='flex flex-col gap-2'>
 							{navigationItems.map((item) => (
 								<NavItem

@@ -1,8 +1,10 @@
 import ThemeProvider from 'app/components/providers/ThemeProvider';
 import classNames from 'classnames';
 import type { Metadata } from 'next';
+import { cookies } from 'next/headers';
 import type { ReactNode } from 'react';
-import ThemeSwitch from './components/layouts/theme-switch/theme-switch';
+import { LanguageProvider } from './components/i18n/language-provider';
+import TopRightControls from './components/layouts/top-right-controls/top-right-controls';
 import { mukta } from './fonts';
 import './tailwind.css';
 
@@ -20,10 +22,14 @@ interface RootLayoutProps {
 	children: ReactNode;
 }
 
-export default function RootLayout({ children }: RootLayoutProps) {
+export default async function RootLayout({ children }: RootLayoutProps) {
+	const cookieStore = await cookies();
+	const language =
+		cookieStore.get('site-language')?.value === 'vi' ? 'vi' : 'en';
+
 	return (
 		<html
-			lang='en'
+			lang={language}
 			suppressHydrationWarning
 			className={classNames(mukta.className, 'scroll-smooth')}
 		>
@@ -54,8 +60,10 @@ export default function RootLayout({ children }: RootLayoutProps) {
 					defaultTheme='dark'
 					themes={['dark', 'light']}
 				>
-					<ThemeSwitch />
-					{children}
+					<LanguageProvider initialLanguage={language}>
+						<TopRightControls />
+						{children}
+					</LanguageProvider>
 				</ThemeProvider>
 			</body>
 		</html>

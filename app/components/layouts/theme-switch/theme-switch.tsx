@@ -3,12 +3,16 @@
 import { motion } from 'motion/react';
 import { useTheme } from 'next-themes';
 import { useEffect, useState } from 'react';
+import { getSiteCopy } from '../../../data/site-copy';
+import { useLanguage } from '../../i18n/language-provider';
 import { MoonIcon } from '../icons/moon-icon';
 import { SunMediumIcon } from '../icons/sun-icon';
 
 const ThemeSwitch = () => {
 	const [mounted, setMounted] = useState(false);
 	const { theme, setTheme, resolvedTheme } = useTheme();
+	const { language } = useLanguage();
+	const copy = getSiteCopy(language);
 
 	// When mounted on client, now we can show the UI
 	useEffect(() => setMounted(true), []);
@@ -27,25 +31,25 @@ const ThemeSwitch = () => {
 	};
 
 	return (
-		<div className='absolute top-4 right-4 z-11'>
-			<motion.button
-				aria-label='Toggle Dark Mode'
-				type='button'
-				whileTap={{
-					scale: 0.7,
-					rotate: 360,
-					transition: { duration: 0.2 },
-				}}
-				whileHover={{ scale: 1.2 }}
-				onClick={toggleTheme}
-			>
-				{mounted && (theme === 'dark' || resolvedTheme === 'dark') ? (
-					<SunMediumIcon className='h-9 w-9' />
-				) : (
-					<MoonIcon className='h-9 w-9' />
-				)}
-			</motion.button>
-		</div>
+		<motion.button
+			aria-label={copy.controls.themeLabel}
+			type='button'
+			className='inline-flex h-9 w-9 items-center justify-center rounded-full border border-black/10 bg-white/90 text-black shadow-lg shadow-black/5 backdrop-blur-md transition-colors hover:text-primary-500 dark:border-white/10 dark:bg-black/80 dark:text-white dark:shadow-black/30'
+			whileTap={{
+				scale: 0.7,
+				rotate: 360,
+				transition: { duration: 0.2 },
+			}}
+			whileHover={{ scale: 1.2 }}
+			onClick={toggleTheme}
+			data-skip-splash-cursor
+		>
+			{mounted && (theme === 'dark' || resolvedTheme === 'dark') ? (
+				<SunMediumIcon className='h-9 w-9' />
+			) : (
+				<MoonIcon className='h-9 w-9' />
+			)}
+		</motion.button>
 	);
 };
 

@@ -1,4 +1,7 @@
+'use client';
+
 import type { ReactNode } from 'react';
+import LanguagePagePlane from '../i18n/language-page-plane';
 import SplashCursor from '../splash-cursor';
 import TopbarNav from './topbar-nav';
 
@@ -10,6 +13,7 @@ export default function PageShell({ children }: PageShellProps) {
 	return (
 		<main className='relative min-h-svh overflow-hidden'>
 			<TopbarNav />
+			<LanguagePagePlane />
 			<SplashCursor
 				containerClassName='min-h-svh w-screen'
 				usePrimaryColors={true}
