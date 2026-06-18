@@ -1,6 +1,7 @@
 'use client';
 
 import classNames from 'classnames';
+import Link from 'next/link';
 import type { SitePost } from '../../data/posts';
 
 interface PostCardProps {
@@ -8,6 +9,7 @@ interface PostCardProps {
 	index: number;
 	locale: 'en' | 'vi';
 	className?: string;
+	href?: string;
 }
 
 const gradients = [
@@ -31,8 +33,9 @@ export default function PostCard({
 	index,
 	locale,
 	className,
+	href,
 }: PostCardProps) {
-	return (
+	const card = (
 		<article
 			className={classNames(
 				'group flex cursor-pointer flex-col overflow-hidden rounded-2xl border border-black/8 bg-white shadow-sm transition-shadow hover:shadow-md dark:border-white/10 dark:bg-white/5',
@@ -57,6 +60,11 @@ export default function PostCard({
 				</div>
 			)}
 			<div className='flex flex-1 flex-col p-5'>
+				{post.category && (
+					<p className='mb-2 text-xs font-medium uppercase tracking-widest text-primary-600 dark:text-primary-400'>
+						{post.category}
+					</p>
+				)}
 				<h3 className='line-clamp-2 text-base font-semibold leading-snug transition-colors group-hover:text-primary-500'>
 					{post.title}
 				</h3>
@@ -71,4 +79,14 @@ export default function PostCard({
 			</div>
 		</article>
 	);
+
+	if (href) {
+		return (
+			<Link href={href} className='block' data-skip-splash-cursor>
+				{card}
+			</Link>
+		);
+	}
+
+	return card;
 }

@@ -59,6 +59,10 @@ interface InsightsCopy {
 	eyebrow: string;
 	title: string;
 	intro: string;
+	searchPlaceholder: string;
+	noResults: string;
+	categories: Record<string, string>;
+	relatedLabel: string;
 }
 
 interface DrawerCopy {
@@ -74,6 +78,7 @@ interface ControlsCopy {
 interface SitePostCopy {
 	title: string;
 	excerpt: string;
+	body?: string[];
 }
 
 interface SiteLanguageCopy {
@@ -146,6 +151,16 @@ export const siteCopy: Record<Language, SiteLanguageCopy> = {
 			title: 'Writing',
 			intro:
 				'Notes on engineering, automation workflows, and the decisions behind building RotexAI.',
+			searchPlaceholder: 'Search articles...',
+			noResults: 'No articles match your search.',
+			categories: {
+				all: 'All',
+				automation: 'Automation',
+				product: 'Product',
+				workflow: 'Workflow',
+				engineering: 'Engineering',
+			},
+			relatedLabel: 'More to read',
 		},
 		drawer: {
 			title: 'Build, share, and give back.',
@@ -268,6 +283,16 @@ export const siteCopy: Record<Language, SiteLanguageCopy> = {
 			title: 'Viết',
 			intro:
 				'Ghi chú về kỹ thuật, quy trình tự động hóa, và những quyết định đằng sau việc xây dựng RotexAI.',
+			searchPlaceholder: 'Tìm bài viết...',
+			noResults: 'Không có bài viết phù hợp.',
+			categories: {
+				all: 'Tất cả',
+				automation: 'Tự động hóa',
+				product: 'Sản phẩm',
+				workflow: 'Quy trình',
+				engineering: 'Kỹ thuật',
+			},
+			relatedLabel: 'Đọc thêm',
 		},
 		drawer: {
 			title: 'Xây dựng, chia sẻ, và đóng góp lại.',
@@ -353,6 +378,7 @@ export function localizePosts(
 			...post,
 			title: localized.title,
 			excerpt: localized.excerpt,
+			...(localized.body ? { body: localized.body } : {}),
 		};
 	});
 }
