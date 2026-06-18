@@ -4,6 +4,7 @@ export interface SitePost {
 	excerpt: string;
 	publishedAt: string;
 	featured: boolean;
+	image?: string;
 }
 
 interface StrapiPostRecord {
@@ -65,7 +66,7 @@ const fallbackPosts: SitePost[] = [
 		excerpt:
 			'Short notes keep decisions recoverable when context disappears later.',
 		publishedAt: '2026-06-10',
-		featured: false,
+		featured: true,
 	},
 	{
 		title: 'How I choose when not to automate something',
@@ -179,11 +180,11 @@ function byNewestFirst(left: SitePost, right: SitePost) {
 
 export async function getHomePosts() {
 	const posts = await loadPosts();
-	const latest = [...posts].sort(byNewestFirst).slice(0, 5);
+	const latest = [...posts].sort(byNewestFirst).slice(0, 6);
 	const featured = [...posts]
 		.filter((post) => post.featured)
 		.sort(byNewestFirst)
-		.slice(0, 5);
+		.slice(0, 6);
 
 	return {
 		featured,
