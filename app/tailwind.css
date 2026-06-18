@@ -158,7 +158,7 @@ html[data-page-transition="backward"]::view-transition-new(root) {
 /* Circle animation from top-right */
 ::view-transition-new(theme) {
 	clip-path: circle(0% at top right);
-	animation: circle-top-right 0.5s ease-out;
+	animation: circle-top-right 0.65s ease-out;
 	animation-fill-mode: both;
 	transform-origin: top right;
 }
@@ -173,6 +173,13 @@ html[data-page-transition="backward"]::view-transition-new(root) {
 	}
 	to {
 		clip-path: circle(150% at top right);
+	}
+}
+
+@media (prefers-reduced-motion: reduce) {
+	::view-transition-new(theme) {
+		animation: none;
+		clip-path: none;
 	}
 }
 

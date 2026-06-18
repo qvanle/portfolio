@@ -2,7 +2,7 @@
 
 import { motion } from 'motion/react';
 import { useTheme } from 'next-themes';
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { getSiteCopy } from '../../../data/site-copy';
 import { useLanguage } from '../../i18n/language-provider';
 import { MoonIcon } from '../icons/moon-icon';
@@ -13,21 +13,29 @@ const ThemeSwitch = () => {
 	const { theme, setTheme, resolvedTheme } = useTheme();
 	const { language } = useLanguage();
 	const copy = getSiteCopy(language);
+	const transitionRef = useRef<ViewTransition | null>(null);
 
-	// When mounted on client, now we can show the UI
 	useEffect(() => setMounted(true), []);
 
 	const toggleTheme = () => {
 		const newTheme = resolvedTheme === 'dark' ? 'light' : 'dark';
 
-		// Use ViewTransition API if supported, otherwise fallback to immediate switch
 		if (typeof document !== 'undefined' && 'startViewTransition' in document) {
-			document.startViewTransition(() => {
+			if (transitionRef.current) {
+				setTheme(newTheme);
+				return;
+			}
+			const transition = document.startViewTransition(() => {
 				setTheme(newTheme);
 			});
-		} else {
-			setTheme(newTheme);
+			transitionRef.current = transition;
+			transition.finished.then(() => {
+				transitionRef.current = null;
+			});
+			return;
 		}
+
+		setTheme(newTheme);
 	};
 
 	return (

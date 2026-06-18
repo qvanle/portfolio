@@ -11,13 +11,11 @@ interface LanguageContextValue {
 	language: Language;
 	setLanguage: (language: Language) => void;
 	toggleLanguage: () => void;
-	signalLanguageTransition: () => void;
-	languageTransitionId: number;
 }
 
 const LanguageContext = createContext<LanguageContextValue | null>(null);
 
-function readLanguageCookie(language: Language) {
+function writeLanguageCookie(language: Language) {
 	if (typeof document === 'undefined') {
 		return;
 	}
@@ -36,7 +34,6 @@ export function LanguageProvider({
 	initialLanguage,
 }: LanguageProviderProps) {
 	const [language, setLanguageState] = useState<Language>(initialLanguage);
-	const [languageTransitionId, setLanguageTransitionId] = useState(0);
 
 	useEffect(() => {
 		try {
@@ -56,7 +53,7 @@ export function LanguageProvider({
 			// ignore storage failures
 		}
 
-		readLanguageCookie(language);
+		writeLanguageCookie(language);
 		document.documentElement.lang = language;
 	}, [language]);
 
@@ -64,13 +61,10 @@ export function LanguageProvider({
 		() => ({
 			language,
 			setLanguage: setLanguageState,
-			languageTransitionId,
-			signalLanguageTransition: () =>
-				setLanguageTransitionId((current) => current + 1),
 			toggleLanguage: () =>
 				setLanguageState((current) => (current === 'en' ? 'vi' : 'en')),
 		}),
-		[language, languageTransitionId],
+		[language],
 	);
 
 	return (
