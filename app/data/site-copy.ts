@@ -44,6 +44,14 @@ interface HomeCopy {
 		intro: string;
 		directLinks: string;
 		emailLabel: string;
+		namePlaceholder: string;
+		emailPlaceholder: string;
+		subjectPlaceholder: string;
+		messagePlaceholder: string;
+		submitLabel: string;
+		sending: string;
+		successMessage: string;
+		errorMessage: string;
 	};
 }
 
@@ -120,9 +128,17 @@ export const siteCopy: Record<Language, SiteLanguageCopy> = {
 			contact: {
 				title: 'Get in Touch',
 				intro:
-					'If something here helped you, send a note. I’m always open to engineering discussions, automation ideas, and thoughtful feedback.',
+					"If something here helped you, send a note. I'm always open to engineering discussions, automation ideas, and thoughtful feedback.",
 				directLinks: 'Direct links',
 				emailLabel: 'Email',
+				namePlaceholder: 'Your name',
+				emailPlaceholder: 'Your email',
+				subjectPlaceholder: 'Subject',
+				messagePlaceholder: 'Your message…',
+				submitLabel: 'Send Message',
+				sending: 'Sending…',
+				successMessage: "Thanks for reaching out! I'll get back to you soon.",
+				errorMessage: 'Something went wrong. Please try again.',
 			},
 		},
 		insights: {
@@ -237,6 +253,14 @@ export const siteCopy: Record<Language, SiteLanguageCopy> = {
 					'Nếu có điều gì ở đây hữu ích với bạn, hãy gửi cho tôi một lời nhắn. Tôi luôn sẵn sàng trao đổi về kỹ thuật, ý tưởng tự động hóa, và những góp ý có chiều sâu.',
 				directLinks: 'Liên kết trực tiếp',
 				emailLabel: 'Email',
+				namePlaceholder: 'Tên của bạn',
+				emailPlaceholder: 'Email của bạn',
+				subjectPlaceholder: 'Chủ đề',
+				messagePlaceholder: 'Lời nhắn của bạn…',
+				submitLabel: 'Gửi tin nhắn',
+				sending: 'Đang gửi…',
+				successMessage: 'Cảm ơn bạn đã liên hệ! Tôi sẽ phản hồi sớm nhất.',
+				errorMessage: 'Đã xảy ra lỗi. Vui lòng thử lại.',
 			},
 		},
 		insights: {

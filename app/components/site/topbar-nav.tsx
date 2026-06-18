@@ -113,6 +113,14 @@ export default function TopbarNav() {
 		];
 
 		const updateActiveSection = () => {
+			if (
+				window.innerHeight + window.scrollY >=
+				document.body.offsetHeight - 50
+			) {
+				setActiveHref(sections[sections.length - 1].href);
+				return;
+			}
+
 			const threshold = Math.max(120, window.innerHeight * 0.28);
 			let nextHref = '/';
 

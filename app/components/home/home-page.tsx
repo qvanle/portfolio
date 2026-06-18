@@ -10,6 +10,7 @@ import PageShell from '../site/page-shell';
 import PostList from '../site/post-list';
 import SectionHeading from '../site/section-heading';
 import SocialLinks from '../site/social-links';
+import ContactForm from './contact-form';
 
 interface HomePageProps {
 	featured: SitePost[];
@@ -67,27 +68,30 @@ export default function HomePage({ featured, latest }: HomePageProps) {
 				</section>
 
 				<section id='contact' className='scroll-mt-24 pb-12 pt-4'>
-					<div className='max-w-4xl space-y-6'>
-						<SectionHeading title={copy.home.contact.title} />
-						<p className='max-w-2xl text-base leading-8 text-black/70 dark:text-white/68 sm:text-lg'>
-							{copy.home.contact.intro}
-						</p>
-						<div className='space-y-4'>
-							<p className='text-sm uppercase tracking-[0.28em] text-black/40 dark:text-white/40'>
-								{copy.home.contact.directLinks}
+					<SectionHeading title={copy.home.contact.title} />
+					<div className='mt-6 grid gap-10 md:grid-cols-2'>
+						<div className='space-y-6'>
+							<p className='text-base leading-8 text-black/70 dark:text-white/68 sm:text-lg'>
+								{copy.home.contact.intro}
 							</p>
-							<SocialLinks />
+							<div className='space-y-4'>
+								<p className='text-sm uppercase tracking-[0.28em] text-black/40 dark:text-white/40'>
+									{copy.home.contact.directLinks}
+								</p>
+								<SocialLinks />
+							</div>
+							<p className='text-sm leading-7 text-black/55 dark:text-white/50'>
+								{copy.home.contact.emailLabel}:{' '}
+								<Link
+									href='mailto:qvanle@rotexai.com'
+									className='text-current transition-colors hover:text-primary-500'
+									data-skip-splash-cursor
+								>
+									qvanle@rotexai.com
+								</Link>
+							</p>
 						</div>
-						<p className='text-sm leading-7 text-black/55 dark:text-white/50'>
-							{copy.home.contact.emailLabel}:{' '}
-							<Link
-								href='mailto:qvanle@rotexai.com'
-								className='text-current transition-colors hover:text-primary-500'
-								data-skip-splash-cursor
-							>
-								qvanle@rotexai.com
-							</Link>
-						</p>
+						<ContactForm />
 					</div>
 				</section>
 			</div>

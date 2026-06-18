@@ -19,6 +19,7 @@ export default function SocialLinks({ className }: SocialLinksProps) {
 					target='_blank'
 					rel='noreferrer'
 					aria-label='GitHub'
+					className='transition-all hover:scale-110 hover:text-primary-500'
 					data-skip-splash-cursor
 				>
 					<GithubIcon className='h-9 w-9' />
@@ -28,6 +29,7 @@ export default function SocialLinks({ className }: SocialLinksProps) {
 					target='_blank'
 					rel='noreferrer'
 					aria-label='LinkedIn'
+					className='transition-all hover:scale-110 hover:text-primary-500'
 					data-skip-splash-cursor
 				>
 					<LinkedinIcon className='h-9 w-9' />
@@ -37,6 +39,7 @@ export default function SocialLinks({ className }: SocialLinksProps) {
 					target='_blank'
 					rel='noreferrer'
 					aria-label='Facebook'
+					className='transition-all hover:scale-110 hover:text-primary-500'
 					data-skip-splash-cursor
 				>
 					<FacebookIcon className='h-9 w-9' />
@@ -45,6 +48,7 @@ export default function SocialLinks({ className }: SocialLinksProps) {
 					href='mailto:qvanle@rotexai.com'
 					aria-label='Email'
 					rel='noreferrer'
+					className='transition-all hover:scale-110 hover:text-primary-500'
 					data-skip-splash-cursor
 				>
 					<AtSignIcon className='h-9 w-9' />
