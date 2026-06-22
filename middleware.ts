@@ -1,5 +1,7 @@
 import { type NextRequest, NextResponse } from 'next/server';
 
+const APP_URL = process.env.NEXT_PUBLIC_APP_URL ?? 'http://localhost:3000';
+
 export function middleware(request: NextRequest) {
 	const { pathname } = request.nextUrl;
 
@@ -9,7 +11,7 @@ export function middleware(request: NextRequest) {
 
 	const session = request.cookies.get('admin_session');
 	if (!session?.value) {
-		return NextResponse.redirect(new URL('/admin/login', request.url));
+		return NextResponse.redirect(`${APP_URL}/admin/login`);
 	}
 
 	return NextResponse.next();

@@ -1,6 +1,8 @@
 import { type NextRequest, NextResponse } from 'next/server';
 import { exchangeCodeForTokens } from '../../lib/auth';
 
+const APP_URL = process.env.NEXT_PUBLIC_APP_URL ?? 'http://localhost:3000';
+
 export async function GET(request: NextRequest) {
 	const { searchParams } = request.nextUrl;
 	const code = searchParams.get('code');
@@ -10,22 +12,19 @@ export async function GET(request: NextRequest) {
 	if (error) {
 		const description = searchParams.get('error_description') ?? error;
 		return NextResponse.redirect(
-			new URL(
-				`/admin/login?error=${encodeURIComponent(description)}`,
-				request.url,
-			),
+			`${APP_URL}/admin/login?error=${encodeURIComponent(description)}`,
 		);
 	}
 
 	if (!code || !state) {
-		return NextResponse.redirect(new URL('/admin/login', request.url));
+		return NextResponse.redirect(`${APP_URL}/admin/login`);
 	}
 
 	const codeVerifier = request.cookies.get('pkce_verifier')?.value;
 	const savedState = request.cookies.get('oauth_state')?.value;
 
 	if (!codeVerifier || !savedState || savedState !== state) {
-		return NextResponse.redirect(new URL('/admin/login', request.url));
+		return NextResponse.redirect(`${APP_URL}/admin/login`);
 	}
 
 	try {
@@ -38,7 +37,7 @@ export async function GET(request: NextRequest) {
 			expires_at: Date.now() + tokens.expires_in * 1000,
 		});
 
-		const response = NextResponse.redirect(new URL('/admin', request.url));
+		const response = NextResponse.redirect(`${APP_URL}/admin`);
 
 		response.cookies.set('admin_session', session, {
 			httpOnly: true,
@@ -53,6 +52,6 @@ export async function GET(request: NextRequest) {
 
 		return response;
 	} catch {
-		return NextResponse.redirect(new URL('/admin/login', request.url));
+		return NextResponse.redirect(`${APP_URL}/admin/login`);
 	}
 }

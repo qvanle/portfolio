@@ -1,10 +1,12 @@
 import { type NextRequest, NextResponse } from 'next/server';
 import { generatePKCE, getKeycloakAuthUrl } from '../../lib/auth';
 
+const APP_URL = process.env.NEXT_PUBLIC_APP_URL ?? 'http://localhost:3000';
+
 export async function GET(request: NextRequest) {
 	const session = request.cookies.get('admin_session');
 	if (session?.value) {
-		return NextResponse.redirect(new URL('/admin', request.url));
+		return NextResponse.redirect(`${APP_URL}/admin`);
 	}
 
 	const { codeVerifier, codeChallenge } = await generatePKCE();
