@@ -6,7 +6,9 @@ import { usePathname, useRouter } from 'next/navigation';
 import { useEffect, useMemo, useState } from 'react';
 import { getSiteCopy } from '../../data/site-copy';
 import { useLanguage } from '../i18n/language-provider';
+import LanguageSwitch from '../i18n/language-switch';
 import { XIcon } from '../layouts/icons/x-icon';
+import ThemeSwitch from '../layouts/theme-switch/theme-switch';
 
 interface NavigationItem {
 	label: string;
@@ -204,6 +206,10 @@ export default function TopbarNav() {
 				>
 					{isOpen ? <XIcon className='h-5 w-5' /> : <MenuIcon />}
 				</button>
+				<div className='flex items-center gap-2'>
+					<LanguageSwitch />
+					<ThemeSwitch />
+				</div>
 			</div>
 
 			{isOpen ? (

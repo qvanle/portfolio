@@ -29,13 +29,18 @@ export default function ParticleNetwork({
 		let dark = document.documentElement.classList.contains('dark');
 		let lastFrame = 0;
 		let visible = true;
-		const frameInterval = 1000 / 30;
+		const isMobile = window.innerWidth < 768;
+		const count = isMobile ? Math.min(particleCount, 20) : particleCount;
+		const dist = isMobile
+			? Math.min(connectionDistance, 100)
+			: connectionDistance;
+		const frameInterval = 1000 / (isMobile ? 24 : 30);
 
-		const px = new Float32Array(particleCount);
-		const py = new Float32Array(particleCount);
-		const vx = new Float32Array(particleCount);
-		const vy = new Float32Array(particleCount);
-		const radii = new Float32Array(particleCount);
+		const px = new Float32Array(count);
+		const py = new Float32Array(count);
+		const vx = new Float32Array(count);
+		const vy = new Float32Array(count);
+		const radii = new Float32Array(count);
 
 		const themeObserver = new MutationObserver(() => {
 			dark = document.documentElement.classList.contains('dark');
@@ -64,7 +69,7 @@ export default function ParticleNetwork({
 		}
 
 		function init() {
-			for (let i = 0; i < particleCount; i++) {
+			for (let i = 0; i < count; i++) {
 				const angle = Math.random() * Math.PI * 2;
 				const speed = particleSpeed * (0.5 + Math.random());
 				px[i] = Math.random() * w;
@@ -85,23 +90,23 @@ export default function ParticleNetwork({
 
 			ctx!.clearRect(0, 0, w, h);
 
-			for (let i = 0; i < particleCount; i++) {
+			for (let i = 0; i < count; i++) {
 				px[i] += vx[i];
 				py[i] += vy[i];
 				if (px[i] < 0 || px[i] > w) vx[i] = -vx[i];
 				if (py[i] < 0 || py[i] > h) vy[i] = -vy[i];
 			}
 
-			const maxD = connectionDistance;
+			const maxD = dist;
 			const maxD2 = maxD * maxD;
 			const c = dark ? 255 : 0;
 
 			ctx!.lineWidth = 0.8;
 			ctx!.beginPath();
-			for (let i = 0; i < particleCount; i++) {
+			for (let i = 0; i < count; i++) {
 				const xi = px[i];
 				const yi = py[i];
-				for (let j = i + 1; j < particleCount; j++) {
+				for (let j = i + 1; j < count; j++) {
 					const dx = xi - px[j];
 					if (dx > maxD || dx < -maxD) continue;
 					const dy = yi - py[j];
@@ -118,7 +123,7 @@ export default function ParticleNetwork({
 
 			ctx!.fillStyle = `rgba(${c},${c},${c},0.7)`;
 			ctx!.beginPath();
-			for (let i = 0; i < particleCount; i++) {
+			for (let i = 0; i < count; i++) {
 				ctx!.moveTo(px[i] + radii[i], py[i]);
 				ctx!.arc(px[i], py[i], radii[i], 0, Math.PI * 2);
 			}
