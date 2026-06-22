@@ -1,4 +1,3 @@
-import { headers } from 'next/headers';
 import { redirect } from 'next/navigation';
 import type { ReactNode } from 'react';
 import { logoutAction } from '../actions/auth';
@@ -9,15 +8,6 @@ export default async function AdminLayout({
 }: {
 	children: ReactNode;
 }) {
-	const headersList = await headers();
-	const pathname = headersList.get('x-next-pathname') ?? '';
-	const isAuthRoute =
-		pathname === '/admin/login' || pathname === '/admin/callback';
-
-	if (isAuthRoute) {
-		return <>{children}</>;
-	}
-
 	const session = await getSession();
 	if (!session) redirect('/admin/login');
 
