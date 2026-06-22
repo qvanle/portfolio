@@ -928,9 +928,22 @@ function SplashCursor({
 		initFramebuffers();
 		let lastUpdateTime = Date.now();
 		let colorUpdateTimer = 0.0;
+		let splashVisible = true;
+
+		const splashVisObserver = new IntersectionObserver(
+			([entry]) => {
+				splashVisible = entry.isIntersecting;
+			},
+			{ threshold: 0 },
+		);
+		splashVisObserver.observe(container);
 
 		function updateFrame() {
 			const dt = calcDeltaTime();
+			if (!splashVisible || document.hidden) {
+				requestAnimationFrame(updateFrame);
+				return;
+			}
 			if (resizeCanvas()) initFramebuffers();
 			updateColors(dt);
 			applyInputs();
@@ -1457,6 +1470,7 @@ function SplashCursor({
 			container.removeEventListener('touchstart', handleTouchStart);
 			container.removeEventListener('touchmove', handleTouchMove);
 			container.removeEventListener('touchend', handleTouchEnd);
+			splashVisObserver.disconnect();
 		};
 		// eslint-disable-next-line react-hooks/exhaustive-deps
 	}, [

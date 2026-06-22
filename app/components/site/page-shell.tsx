@@ -21,6 +21,11 @@ export default function PageShell({
 					SPLAT_FORCE: 3600,
 				}
 			: { SPLAT_RADIUS: 0.08, SPLAT_FORCE: 3600 };
+	const splashPerf = {
+		SIM_RESOLUTION: 64,
+		DYE_RESOLUTION: 512,
+		PRESSURE_ITERATIONS: 10,
+	};
 
 	return (
 		<main className='relative min-h-svh overflow-hidden'>
@@ -30,6 +35,7 @@ export default function PageShell({
 				usePrimaryColors={true}
 				COLOR_UPDATE_SPEED={6}
 				{...splashProps}
+				{...splashPerf}
 			>
 				<ParticleNetwork />
 				<div className='relative min-h-svh'>{children}</div>

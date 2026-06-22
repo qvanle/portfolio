@@ -1,17 +1,9 @@
 'use client';
 import { useEffect, useRef } from 'react';
 
-interface Particle {
-	x: number;
-	y: number;
-	vx: number;
-	vy: number;
-	radius: number;
-}
-
 export default function ParticleNetwork({
-	particleCount = 60,
-	connectionDistance = 150,
+	particleCount = 45,
+	connectionDistance = 120,
 	particleSpeed = 0.3,
 	lineOpacity = 0.15,
 }: {
@@ -28,13 +20,38 @@ export default function ParticleNetwork({
 		const container = containerRef.current;
 		if (!canvas || !container) return;
 
-		const ctx = canvas.getContext('2d');
+		const ctx = canvas.getContext('2d', { alpha: true });
 		if (!ctx) return;
 
 		let animationId: number;
-		const particles: Particle[] = [];
 		let w = 0;
 		let h = 0;
+		let dark = document.documentElement.classList.contains('dark');
+		let lastFrame = 0;
+		let visible = true;
+		const frameInterval = 1000 / 30;
+
+		const px = new Float32Array(particleCount);
+		const py = new Float32Array(particleCount);
+		const vx = new Float32Array(particleCount);
+		const vy = new Float32Array(particleCount);
+		const radii = new Float32Array(particleCount);
+
+		const themeObserver = new MutationObserver(() => {
+			dark = document.documentElement.classList.contains('dark');
+		});
+		themeObserver.observe(document.documentElement, {
+			attributes: true,
+			attributeFilter: ['class'],
+		});
+
+		const visibilityObserver = new IntersectionObserver(
+			([entry]) => {
+				visible = entry.isIntersecting;
+			},
+			{ threshold: 0 },
+		);
+		visibilityObserver.observe(container);
 
 		function resize() {
 			const rect = container!.getBoundingClientRect();
@@ -46,83 +63,80 @@ export default function ParticleNetwork({
 			ctx!.setTransform(dpr, 0, 0, dpr, 0, 0);
 		}
 
-		function initParticles() {
-			particles.length = 0;
+		function init() {
 			for (let i = 0; i < particleCount; i++) {
 				const angle = Math.random() * Math.PI * 2;
 				const speed = particleSpeed * (0.5 + Math.random());
-				particles.push({
-					x: Math.random() * w,
-					y: Math.random() * h,
-					vx: Math.cos(angle) * speed,
-					vy: Math.sin(angle) * speed,
-					radius: 1.5 + Math.random() * 3.5,
-				});
+				px[i] = Math.random() * w;
+				py[i] = Math.random() * h;
+				vx[i] = Math.cos(angle) * speed;
+				vy[i] = Math.sin(angle) * speed;
+				radii[i] = 1.5 + Math.random() * 3.5;
 			}
 		}
 
-		function isDark() {
-			return document.documentElement.classList.contains('dark');
-		}
+		function animate(now: number) {
+			animationId = requestAnimationFrame(animate);
 
-		function animate() {
+			if (!visible || document.hidden) return;
+			const delta = now - lastFrame;
+			if (delta < frameInterval) return;
+			lastFrame = now - (delta % frameInterval);
+
 			ctx!.clearRect(0, 0, w, h);
 
-			const dark = isDark();
-			const rgb = dark ? '255, 255, 255' : '0, 0, 0';
-			const dotAlpha = dark ? 0.7 : 0.7;
-
-			for (const p of particles) {
-				p.x += p.vx;
-				p.y += p.vy;
-
-				if (p.x < 0 || p.x > w) p.vx *= -1;
-				if (p.y < 0 || p.y > h) p.vy *= -1;
-				p.x = Math.max(0, Math.min(w, p.x));
-				p.y = Math.max(0, Math.min(h, p.y));
+			for (let i = 0; i < particleCount; i++) {
+				px[i] += vx[i];
+				py[i] += vy[i];
+				if (px[i] < 0 || px[i] > w) vx[i] = -vx[i];
+				if (py[i] < 0 || py[i] > h) vy[i] = -vy[i];
 			}
 
-			const distSq = connectionDistance * connectionDistance;
+			const maxD = connectionDistance;
+			const maxD2 = maxD * maxD;
+			const c = dark ? 255 : 0;
+
 			ctx!.lineWidth = 0.8;
-			for (let i = 0; i < particles.length; i++) {
-				for (let j = i + 1; j < particles.length; j++) {
-					const dx = particles[i].x - particles[j].x;
-					const dy = particles[i].y - particles[j].y;
+			ctx!.beginPath();
+			for (let i = 0; i < particleCount; i++) {
+				const xi = px[i];
+				const yi = py[i];
+				for (let j = i + 1; j < particleCount; j++) {
+					const dx = xi - px[j];
+					if (dx > maxD || dx < -maxD) continue;
+					const dy = yi - py[j];
+					if (dy > maxD || dy < -maxD) continue;
 					const d2 = dx * dx + dy * dy;
-					if (d2 < distSq) {
-						const opacity =
-							(1 - Math.sqrt(d2) / connectionDistance) * lineOpacity;
-						ctx!.beginPath();
-						ctx!.strokeStyle = `rgba(${rgb}, ${opacity})`;
-						ctx!.moveTo(particles[i].x, particles[i].y);
-						ctx!.lineTo(particles[j].x, particles[j].y);
-						ctx!.stroke();
+					if (d2 < maxD2) {
+						ctx!.moveTo(xi, yi);
+						ctx!.lineTo(px[j], py[j]);
 					}
 				}
 			}
+			ctx!.strokeStyle = `rgba(${c},${c},${c},${lineOpacity * 0.6})`;
+			ctx!.stroke();
 
-			ctx!.fillStyle = `rgba(${rgb}, ${dotAlpha})`;
-			for (const p of particles) {
-				ctx!.beginPath();
-				ctx!.arc(p.x, p.y, p.radius, 0, Math.PI * 2);
-				ctx!.fill();
+			ctx!.fillStyle = `rgba(${c},${c},${c},0.7)`;
+			ctx!.beginPath();
+			for (let i = 0; i < particleCount; i++) {
+				ctx!.moveTo(px[i] + radii[i], py[i]);
+				ctx!.arc(px[i], py[i], radii[i], 0, Math.PI * 2);
 			}
-
-			animationId = requestAnimationFrame(animate);
+			ctx!.fill();
 		}
 
 		resize();
-		initParticles();
-		animate();
+		init();
+		animationId = requestAnimationFrame(animate);
 
-		const observer = new ResizeObserver(() => {
-			resize();
-		});
-		observer.observe(container);
+		const resizeObserver = new ResizeObserver(resize);
+		resizeObserver.observe(container);
 
 		return () => {
 			cancelAnimationFrame(animationId);
-			observer.disconnect();
+			resizeObserver.disconnect();
+			themeObserver.disconnect();
+			visibilityObserver.disconnect();
 		};
 	}, [particleCount, connectionDistance, particleSpeed, lineOpacity]);
 
