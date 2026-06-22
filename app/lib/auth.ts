@@ -105,26 +105,6 @@ export async function exchangeCodeForTokens(
 	return res.json();
 }
 
-async function refreshKeycloakToken(
-	refreshToken: string,
-): Promise<TokenResponse> {
-	const res = await fetch(TOKEN_ENDPOINT, {
-		method: 'POST',
-		headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-		body: new URLSearchParams({
-			grant_type: 'refresh_token',
-			client_id: CLIENT_ID,
-			refresh_token: refreshToken,
-		}),
-	});
-
-	if (!res.ok) {
-		throw new Error(`Token refresh failed: ${res.status}`);
-	}
-
-	return res.json();
-}
-
 export async function setSessionCookie(tokens: TokenResponse) {
 	const cookieStore = await cookies();
 	const session: SessionData = {
