@@ -18,7 +18,6 @@ interface SessionData {
 export function getDirectusSSOUrl(): string {
 	const params = new URLSearchParams({
 		redirect: CALLBACK_URL,
-		mode: 'json',
 	});
 	return `${DIRECTUS_URL}/auth/login/keycloak?${params}`;
 }
