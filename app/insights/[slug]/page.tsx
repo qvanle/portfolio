@@ -1,3 +1,4 @@
+import { cookies } from 'next/headers';
 import { notFound } from 'next/navigation';
 import PostModal from '../../components/insights/post-modal';
 import { getInsightsPosts, getPostBySlug } from '../../data/posts';
@@ -8,13 +9,17 @@ interface PageProps {
 
 export default async function Page({ params }: PageProps) {
 	const { slug } = await params;
-	const post = await getPostBySlug(slug);
+	const cookieStore = await cookies();
+	const language =
+		cookieStore.get('site-language')?.value === 'vi' ? 'vi' : 'en';
+
+	const post = await getPostBySlug(slug, language);
 
 	if (!post) {
 		notFound();
 	}
 
-	const allPosts = await getInsightsPosts();
+	const allPosts = await getInsightsPosts(language);
 	const others = allPosts.filter((p) => p.slug !== slug);
 	const sameCategory = others.filter((p) => p.category === post.category);
 	const different = others.filter((p) => p.category !== post.category);

@@ -19,14 +19,13 @@ export async function submitContactForm(
 		return { success: false, error: 'Please fill in all required fields.' };
 	}
 
-	const baseUrl = process.env.STRAPI_URL?.trim();
+	const baseUrl = process.env.DIRECTUS_URL?.trim();
 
 	if (!baseUrl) {
 		return { success: false, error: 'Service unavailable.' };
 	}
 
-	const token = process.env.STRAPI_API_TOKEN?.trim();
-	const endpoint = `${baseUrl.replace(/\/$/, '')}/api/contact-submissions`;
+	const endpoint = `${baseUrl.replace(/\/$/, '')}/items/contact_submissions`;
 
 	try {
 		const response = await fetch(endpoint, {
@@ -34,15 +33,12 @@ export async function submitContactForm(
 			headers: {
 				'Content-Type': 'application/json',
 				Accept: 'application/json',
-				...(token ? { Authorization: `Bearer ${token}` } : {}),
 			},
 			body: JSON.stringify({
-				data: {
-					name: data.name.trim(),
-					email: data.email.trim(),
-					subject: data.subject?.trim() || '',
-					message: data.message.trim(),
-				},
+				name: data.name.trim(),
+				email: data.email.trim(),
+				subject: data.subject?.trim() || '',
+				message: data.message.trim(),
 			}),
 		});
 

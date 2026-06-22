@@ -5,7 +5,7 @@ import { motion } from 'motion/react';
 import type { ReactNode } from 'react';
 import { useMemo, useState } from 'react';
 import type { SitePost } from '../../data/posts';
-import { getSiteCopy, localizePosts } from '../../data/site-copy';
+import { getSiteCopy } from '../../data/site-copy';
 import { merryWeather } from '../../fonts';
 import { useLanguage } from '../i18n/language-provider';
 import Footer from '../site/footer';
@@ -40,17 +40,13 @@ export default function InsightsLayout({
 }: InsightsLayoutProps) {
 	const { language } = useLanguage();
 	const copy = getSiteCopy(language);
-	const localizedPosts = useMemo(
-		() => localizePosts(posts, language),
-		[language, posts],
-	);
 
 	const [searchQuery, setSearchQuery] = useState('');
 	const [activeCategory, setActiveCategory] = useState('all');
 
 	const filteredPosts = useMemo(() => {
 		const query = searchQuery.toLowerCase().trim();
-		return localizedPosts.filter((post) => {
+		return posts.filter((post) => {
 			if (activeCategory !== 'all' && post.category !== activeCategory) {
 				return false;
 			}
@@ -62,7 +58,7 @@ export default function InsightsLayout({
 			}
 			return true;
 		});
-	}, [localizedPosts, searchQuery, activeCategory]);
+	}, [posts, searchQuery, activeCategory]);
 
 	return (
 		<PageShell>

@@ -89,6 +89,19 @@
           }
         }
       }
+    },
+    {
+      "includes": ["app/components/insights/post-modal.tsx"],
+      "linter": {
+        "rules": {
+          "security": {
+            "noDangerouslySetInnerHtml": "off"
+          },
+          "performance": {
+            "noImgElement": "off"
+          }
+        }
+      }
     }
   ],
   "assist": {

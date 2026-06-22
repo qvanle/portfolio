@@ -1,9 +1,8 @@
 'use client';
 
 import Link from 'next/link';
-import { useMemo } from 'react';
 import type { SitePost } from '../../data/posts';
-import { getSiteCopy, localizePosts } from '../../data/site-copy';
+import { getSiteCopy } from '../../data/site-copy';
 import Hero from '../hero/hero';
 import { useLanguage } from '../i18n/language-provider';
 import Footer from '../site/footer';
@@ -22,14 +21,6 @@ interface HomePageProps {
 export default function HomePage({ featured, latest }: HomePageProps) {
 	const { language } = useLanguage();
 	const copy = getSiteCopy(language);
-	const localizedFeatured = useMemo(
-		() => localizePosts(featured, language),
-		[featured, language],
-	);
-	const localizedLatest = useMemo(
-		() => localizePosts(latest, language),
-		[latest, language],
-	);
 
 	return (
 		<PageShell>
@@ -60,7 +51,7 @@ export default function HomePage({ featured, latest }: HomePageProps) {
 							actionLabel={copy.home.featured.more}
 						/>
 						<div className='mt-8 grid gap-6 sm:grid-cols-2 lg:grid-cols-3'>
-							{localizedFeatured.map((post, i) => (
+							{featured.map((post, i) => (
 								<PostCard
 									key={post.slug}
 									post={post}
@@ -83,7 +74,7 @@ export default function HomePage({ featured, latest }: HomePageProps) {
 							actionLabel={copy.home.latest.more}
 						/>
 						<div className='mt-8 grid gap-6 sm:grid-cols-2 lg:grid-cols-3'>
-							{localizedLatest.map((post, i) => (
+							{latest.map((post, i) => (
 								<PostCard
 									key={post.slug}
 									post={post}

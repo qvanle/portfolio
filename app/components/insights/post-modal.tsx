@@ -3,9 +3,9 @@
 import classNames from 'classnames';
 import { AnimatePresence, motion } from 'motion/react';
 import { useRouter } from 'next/navigation';
-import { useCallback, useEffect, useMemo } from 'react';
+import { useCallback, useEffect } from 'react';
 import type { SitePost } from '../../data/posts';
-import { getSiteCopy, localizePosts } from '../../data/site-copy';
+import { getSiteCopy } from '../../data/site-copy';
 import { merryWeather } from '../../fonts';
 import { useLanguage } from '../i18n/language-provider';
 import { XIcon } from '../layouts/icons/x-icon';
@@ -45,11 +45,6 @@ export default function PostModal({ post, relatedPosts }: PostModalProps) {
 	const router = useRouter();
 	const { language } = useLanguage();
 	const copy = getSiteCopy(language);
-	const [localizedPost] = localizePosts([post], language);
-	const localizedRelated = useMemo(
-		() => localizePosts(relatedPosts, language),
-		[relatedPosts, language],
-	);
 	const gradientIndex = gradientIndexForSlug(post.slug);
 
 	const close = useCallback(() => {
@@ -70,8 +65,6 @@ export default function PostModal({ post, relatedPosts }: PostModalProps) {
 			document.body.style.overflow = '';
 		};
 	}, []);
-
-	const body = localizedPost.body ?? post.body ?? [];
 
 	return (
 		<AnimatePresence>
@@ -106,9 +99,10 @@ export default function PostModal({ post, relatedPosts }: PostModalProps) {
 
 					{post.image ? (
 						<div className='h-56 w-full overflow-hidden sm:h-72'>
+							{/* biome-ignore lint/performance/noImgElement: external CMS image URL */}
 							<img
 								src={post.image}
-								alt={localizedPost.title}
+								alt={post.title}
 								className='h-full w-full object-cover'
 							/>
 						</div>
@@ -120,7 +114,7 @@ export default function PostModal({ post, relatedPosts }: PostModalProps) {
 
 					<div className='mx-auto max-w-3xl px-6 py-12 sm:px-10 sm:py-16'>
 						<p className='text-sm uppercase tracking-[0.28em] text-black/45 dark:text-white/40'>
-							{formatPostDate(localizedPost.publishedAt, language)}
+							{formatPostDate(post.publishedAt, language)}
 						</p>
 						<h1
 							className={classNames(
@@ -128,27 +122,26 @@ export default function PostModal({ post, relatedPosts }: PostModalProps) {
 								'mt-4 text-3xl leading-tight sm:text-4xl lg:text-5xl',
 							)}
 						>
-							{localizedPost.title}
+							{post.title}
 						</h1>
 						<p className='mt-6 text-lg leading-8 text-black/60 dark:text-white/55'>
-							{localizedPost.excerpt}
+							{post.excerpt}
 						</p>
 
-						{body.length > 0 && (
-							<div className='mt-10 space-y-6 border-t border-black/8 pt-10 text-base leading-8 text-black/72 dark:border-white/8 dark:text-white/68 sm:text-lg'>
-								{body.map((paragraph) => (
-									<p key={paragraph}>{paragraph}</p>
-								))}
-							</div>
+						{post.body && (
+							<div
+								className='mt-10 space-y-6 border-t border-black/8 pt-10 text-base leading-8 text-black/72 dark:border-white/8 dark:text-white/68 sm:text-lg'
+								dangerouslySetInnerHTML={{ __html: post.body }}
+							/>
 						)}
 
-						{localizedRelated.length > 0 && (
+						{relatedPosts.length > 0 && (
 							<div className='mt-16 border-t border-black/8 pt-10 dark:border-white/8'>
 								<p className='mb-6 text-xs uppercase tracking-[0.28em] text-black/40 dark:text-white/40'>
 									{copy.insights.relatedLabel}
 								</p>
 								<div className='grid gap-6 sm:grid-cols-2 lg:grid-cols-3'>
-									{localizedRelated.map((related, i) => (
+									{relatedPosts.map((related, i) => (
 										<PostCard
 											key={related.slug}
 											post={related}

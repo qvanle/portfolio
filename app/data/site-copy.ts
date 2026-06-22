@@ -1,5 +1,3 @@
-import type { SitePost } from './posts';
-
 export type Language = 'en' | 'vi';
 
 export interface PageHeadlineParts {
@@ -75,19 +73,12 @@ interface ControlsCopy {
 	languageLabel: string;
 }
 
-interface SitePostCopy {
-	title: string;
-	excerpt: string;
-	body?: string[];
-}
-
 interface SiteLanguageCopy {
 	nav: NavCopy;
 	home: HomeCopy;
 	insights: InsightsCopy;
 	drawer: DrawerCopy;
 	controls: ControlsCopy;
-	posts: Record<string, SitePostCopy>;
 }
 
 export const siteCopy: Record<Language, SiteLanguageCopy> = {
@@ -170,58 +161,6 @@ export const siteCopy: Record<Language, SiteLanguageCopy> = {
 			themeLabel: 'Toggle Dark Mode',
 			languageLabel: 'Switch language',
 		},
-		posts: {
-			'scoping-automation-before-building': {
-				title: 'How I scope automation before I build it',
-				excerpt:
-					'A simple checklist I use to keep repetitive work honest, measurable, and worth automating.',
-			},
-			'cost-of-manual-repetition': {
-				title: 'The cost of manual repetition in small teams',
-				excerpt:
-					'Why tiny inefficiencies matter once they are repeated across a whole engineering org.',
-			},
-			'building-tools-for-myself-first': {
-				title: 'Building tools for myself first',
-				excerpt:
-					'A practical rule that keeps product decisions grounded in actual usage.',
-			},
-			'what-rotexai-should-save-people-from': {
-				title: 'What I want RotexAI to save people from',
-				excerpt:
-					'The class of tasks I think should disappear from a modern workflow stack.',
-			},
-			'calmer-way-to-think-about-workflow-design': {
-				title: 'A calmer way to think about workflow design',
-				excerpt:
-					'Less ceremony, fewer steps, and a clearer path from input to result.',
-			},
-			'why-i-still-write-implementation-notes': {
-				title: 'Why I still write implementation notes',
-				excerpt:
-					'Short notes keep decisions recoverable when context disappears later.',
-			},
-			'how-i-choose-when-not-to-automate': {
-				title: 'How I choose when not to automate something',
-				excerpt:
-					'Automation is only worth it when the result is easier to trust than the manual path.',
-			},
-			'designing-for-busy-first-time-users': {
-				title: 'Designing for first-time users who are busy',
-				excerpt:
-					'Small interfaces work best when they explain themselves without ceremony.',
-			},
-			'parts-of-a-workflow-that-should-stay-visible': {
-				title: 'The parts of a workflow that should stay visible',
-				excerpt:
-					'Visibility is what lets people trust a system they are about to rely on.',
-			},
-			'open-source-tools-that-should-be-boring': {
-				title: 'Open-source tools that should be boring to use',
-				excerpt:
-					'The best utilities disappear into the work instead of asking for attention.',
-			},
-		},
 	},
 	vi: {
 		nav: {
@@ -302,83 +241,9 @@ export const siteCopy: Record<Language, SiteLanguageCopy> = {
 			themeLabel: 'Chuyển chế độ tối',
 			languageLabel: 'Đổi ngôn ngữ',
 		},
-		posts: {
-			'scoping-automation-before-building': {
-				title: 'Tôi xác định phạm vi tự động hóa trước khi bắt đầu như thế nào',
-				excerpt:
-					'Một checklist đơn giản tôi dùng để giữ cho công việc lặp lại trở nên rõ ràng, đo được, và đáng để tự động hóa.',
-			},
-			'cost-of-manual-repetition': {
-				title: 'Chi phí của sự lặp lại thủ công trong các nhóm nhỏ',
-				excerpt:
-					'Vì sao những bất hiệu quả nhỏ cũng trở nên đáng kể khi chúng lặp lại trên cả một tổ chức kỹ thuật.',
-			},
-			'building-tools-for-myself-first': {
-				title: 'Xây công cụ cho chính mình trước',
-				excerpt:
-					'Một nguyên tắc thực tế giúp các quyết định sản phẩm bám sát cách sử dụng thật.',
-			},
-			'what-rotexai-should-save-people-from': {
-				title: 'Tôi muốn RotexAI giúp mọi người thoát khỏi điều gì',
-				excerpt:
-					'Những dạng công việc lẽ ra nên biến mất khỏi một quy trình làm việc hiện đại.',
-			},
-			'calmer-way-to-think-about-workflow-design': {
-				title: 'Một cách bình tĩnh hơn để nghĩ về thiết kế quy trình',
-				excerpt:
-					'Ít hình thức hơn, ít bước hơn, và một đường đi rõ ràng hơn từ đầu vào tới kết quả.',
-			},
-			'why-i-still-write-implementation-notes': {
-				title: 'Vì sao tôi vẫn viết ghi chú triển khai',
-				excerpt:
-					'Những ghi chú ngắn giúp các quyết định vẫn có thể truy lại khi ngữ cảnh đã mất đi.',
-			},
-			'how-i-choose-when-not-to-automate': {
-				title: 'Tôi chọn không tự động hóa một thứ như thế nào',
-				excerpt:
-					'Tự động hóa chỉ đáng làm khi kết quả tạo ra dễ tin hơn so với cách làm thủ công.',
-			},
-			'designing-for-busy-first-time-users': {
-				title: 'Thiết kế cho người dùng lần đầu nhưng đang bận',
-				excerpt:
-					'Giao diện nhỏ gọn hoạt động tốt nhất khi tự giải thích được mà không cần quá nhiều lời.',
-			},
-			'parts-of-a-workflow-that-should-stay-visible': {
-				title: 'Những phần của quy trình cần được giữ cho nhìn thấy',
-				excerpt:
-					'Khả năng quan sát là điều giúp người dùng tin vào một hệ thống họ sắp phụ thuộc.',
-			},
-			'open-source-tools-that-should-be-boring': {
-				title: 'Công cụ mã nguồn mở nên đủ “boring” để dùng',
-				excerpt:
-					'Những tiện ích tốt nhất sẽ biến mất vào công việc thay vì đòi hỏi sự chú ý.',
-			},
-		},
 	},
 };
 
 export function getSiteCopy(language: Language) {
 	return siteCopy[language];
-}
-
-export function localizePosts(
-	posts: SitePost[],
-	language: Language,
-): SitePost[] {
-	const postCopy = siteCopy[language].posts;
-
-	return posts.map((post) => {
-		const localized = postCopy[post.slug];
-
-		if (!localized) {
-			return post;
-		}
-
-		return {
-			...post,
-			title: localized.title,
-			excerpt: localized.excerpt,
-			...(localized.body ? { body: localized.body } : {}),
-		};
-	});
 }
