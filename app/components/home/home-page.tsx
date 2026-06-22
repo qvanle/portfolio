@@ -23,7 +23,7 @@ export default function HomePage({ featured, latest }: HomePageProps) {
 	const copy = getSiteCopy(language);
 
 	return (
-		<PageShell>
+		<PageShell splashCursorSize='small'>
 			<div className='pb-20'>
 				<Hero />
 

@@ -1,24 +1,39 @@
 'use client';
 
 import type { ReactNode } from 'react';
+import ParticleNetwork from '../particle-network';
 import SplashCursor from '../splash-cursor';
 import TopbarNav from './topbar-nav';
 
 interface PageShellProps {
 	children: ReactNode;
+	splashCursorSize?: 'default' | 'small';
 }
 
-export default function PageShell({ children }: PageShellProps) {
+export default function PageShell({
+	children,
+	splashCursorSize = 'default',
+}: PageShellProps) {
+	const splashProps =
+		splashCursorSize === 'small'
+			? {
+					SPLAT_RADIUS: 0.03,
+					SPLAT_FORCE: 800,
+					DENSITY_DISSIPATION: 4.5,
+					VELOCITY_DISSIPATION: 3.5,
+				}
+			: { SPLAT_RADIUS: 0.08, SPLAT_FORCE: 2400 };
+
 	return (
 		<main className='relative min-h-svh overflow-hidden'>
 			<TopbarNav />
 			<SplashCursor
 				containerClassName='min-h-svh w-screen'
 				usePrimaryColors={true}
-				SPLAT_RADIUS={0.08}
-				SPLAT_FORCE={2400}
 				COLOR_UPDATE_SPEED={6}
+				{...splashProps}
 			>
+				<ParticleNetwork />
 				<div className='relative min-h-svh'>{children}</div>
 			</SplashCursor>
 		</main>
