@@ -1,33 +1,50 @@
 import { type NextRequest, NextResponse } from 'next/server';
 
 const APP_URL = process.env.NEXT_PUBLIC_APP_URL ?? 'http://localhost:3000';
+const DIRECTUS_URL =
+	process.env.DIRECTUS_URL?.replace(/\/$/, '') ?? 'https://cms.rotexai.com';
 
 export async function GET(request: NextRequest) {
-	const { searchParams } = request.nextUrl;
-	const accessToken = searchParams.get('access_token');
-	const refreshToken = searchParams.get('refresh_token');
-	const expires = searchParams.get('expires');
+	const sessionToken = request.cookies.get('directus_session_token')?.value;
 
-	if (!accessToken || !refreshToken) {
+	if (!sessionToken) {
 		return NextResponse.redirect(`${APP_URL}/admin/login`);
 	}
 
-	const expiresMs = expires ? Number(expires) : 900_000;
-	const session = JSON.stringify({
-		access_token: accessToken,
-		refresh_token: refreshToken,
-		expires_at: Date.now() + expiresMs,
-	});
+	try {
+		const res = await fetch(`${DIRECTUS_URL}/auth/refresh`, {
+			method: 'POST',
+			headers: {
+				'Content-Type': 'application/json',
+				Cookie: `directus_session_token=${sessionToken}`,
+			},
+			body: JSON.stringify({ mode: 'session' }),
+		});
 
-	const response = NextResponse.redirect(`${APP_URL}/admin`);
+		if (!res.ok) {
+			return NextResponse.redirect(`${APP_URL}/admin/login`);
+		}
 
-	response.cookies.set('admin_session', session, {
-		httpOnly: true,
-		secure: process.env.NODE_ENV === 'production',
-		sameSite: 'lax',
-		path: '/',
-		maxAge: 60 * 60 * 24,
-	});
+		const json = await res.json();
+		const { access_token, expires } = json.data;
 
-	return response;
+		const session = JSON.stringify({
+			access_token,
+			expires_at: Date.now() + expires,
+		});
+
+		const response = NextResponse.redirect(`${APP_URL}/admin`);
+
+		response.cookies.set('admin_session', session, {
+			httpOnly: true,
+			secure: true,
+			sameSite: 'lax',
+			path: '/',
+			maxAge: 60 * 60 * 24,
+		});
+
+		return response;
+	} catch {
+		return NextResponse.redirect(`${APP_URL}/admin/login`);
+	}
 }

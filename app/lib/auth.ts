@@ -11,7 +11,6 @@ const CALLBACK_URL = `${APP_URL}/admin/callback`;
 
 interface SessionData {
 	access_token: string;
-	refresh_token: string;
 	expires_at: number;
 }
 
@@ -20,27 +19,6 @@ export function getDirectusSSOUrl(): string {
 		redirect: CALLBACK_URL,
 	});
 	return `${DIRECTUS_URL}/auth/login/keycloak?${params}`;
-}
-
-export function getDirectusLogoutUrl(): string {
-	return `${APP_URL}/admin/login`;
-}
-
-export async function refreshDirectusToken(
-	refreshToken: string,
-): Promise<{ access_token: string; refresh_token: string; expires: number }> {
-	const res = await fetch(`${DIRECTUS_URL}/auth/refresh`, {
-		method: 'POST',
-		headers: { 'Content-Type': 'application/json' },
-		body: JSON.stringify({ refresh_token: refreshToken, mode: 'json' }),
-	});
-
-	if (!res.ok) {
-		throw new Error(`Directus refresh failed: ${res.status}`);
-	}
-
-	const json = await res.json();
-	return json.data;
 }
 
 export async function clearSession() {
@@ -64,7 +42,32 @@ export async function getSession(): Promise<SessionData | null> {
 		return session;
 	}
 
-	return null;
+	// Token expired — try refreshing via Directus session cookie
+	const sessionToken = cookieStore.get('directus_session_token')?.value;
+	if (!sessionToken) return null;
+
+	try {
+		const serverUrl =
+			process.env.DIRECTUS_URL?.replace(/\/$/, '') ?? DIRECTUS_URL;
+		const res = await fetch(`${serverUrl}/auth/refresh`, {
+			method: 'POST',
+			headers: {
+				'Content-Type': 'application/json',
+				Cookie: `directus_session_token=${sessionToken}`,
+			},
+			body: JSON.stringify({ mode: 'session' }),
+		});
+
+		if (!res.ok) return null;
+
+		const json = await res.json();
+		return {
+			access_token: json.data.access_token,
+			expires_at: Date.now() + json.data.expires,
+		};
+	} catch {
+		return null;
+	}
 }
 
 export async function directusFetch(
