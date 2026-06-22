@@ -81,6 +81,11 @@
   },
   "overrides": [
     {
+      "includes": ["next-env.d.ts"],
+      "formatter": { "enabled": false },
+      "linter": { "enabled": false }
+    },
+    {
       "includes": ["app/tailwind.css"],
       "linter": {
         "rules": {
@@ -97,6 +102,16 @@
           "security": {
             "noDangerouslySetInnerHtml": "off"
           },
+          "performance": {
+            "noImgElement": "off"
+          }
+        }
+      }
+    },
+    {
+      "includes": ["app/components/admin/post-form.tsx"],
+      "linter": {
+        "rules": {
           "performance": {
             "noImgElement": "off"
           }
