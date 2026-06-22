@@ -18,11 +18,9 @@ export default function PageShell({
 		splashCursorSize === 'small'
 			? {
 					SPLAT_RADIUS: 0.03,
-					SPLAT_FORCE: 800,
-					DENSITY_DISSIPATION: 4.5,
-					VELOCITY_DISSIPATION: 3.5,
+					SPLAT_FORCE: 3600,
 				}
-			: { SPLAT_RADIUS: 0.08, SPLAT_FORCE: 2400 };
+			: { SPLAT_RADIUS: 0.08, SPLAT_FORCE: 3600 };
 
 	return (
 		<main className='relative min-h-svh overflow-hidden'>
