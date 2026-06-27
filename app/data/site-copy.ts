@@ -94,11 +94,11 @@ export const siteCopy: Record<Language, SiteLanguageCopy> = {
 		home: {
 			eyebrow: 'Hello',
 			headline: {
-				prefix: 'A place for ',
-				strong: 'building',
-				middle: ', ',
-				accent: 'sharing knowledge',
-				suffix: ', and giving back.',
+				prefix: '',
+				strong: 'Build.',
+				middle: ' Learn. ',
+				accent: 'Share.',
+				suffix: '',
 			},
 			intro:
 				"I'm qvanle, founder of RotexAI, an AI workflow automation platform designed to optimize costs for repetitive tasks. This site is my way of giving back to the tech community that taught me so much.",

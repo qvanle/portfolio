@@ -25,7 +25,7 @@ export default function SocialLinks({ className }: SocialLinksProps) {
 					<GithubIcon className='h-9 w-9' />
 				</Link>
 				<Link
-					href='https://www.linkedin.com/in/le-quoc-van-754b53179/'
+					href='http://www.linkedin.com/in/qvanle'
 					target='_blank'
 					rel='noreferrer'
 					aria-label='LinkedIn'

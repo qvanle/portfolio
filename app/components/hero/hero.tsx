@@ -42,9 +42,7 @@ export default function Hero() {
 					{copy.home.headline.prefix}
 					<span className='font-bold'>{copy.home.headline.strong}</span>
 					{copy.home.headline.middle}
-					<span className='italic border-b border-b-primary-500'>
-						{copy.home.headline.accent}
-					</span>
+					<span className='italic'>{copy.home.headline.accent}</span>
 					{copy.home.headline.suffix}
 				</motion.h1>
 				<motion.p
