@@ -1,6 +1,8 @@
 'use client';
 
+import Image from 'next/image';
 import Link from 'next/link';
+import portraitImage from '../../assets/portrait.jpg';
 import type { SitePost } from '../../data/posts';
 import { getSiteCopy } from '../../data/site-copy';
 import Hero from '../hero/hero';
@@ -29,12 +31,24 @@ export default function HomePage({ featured, latest }: HomePageProps) {
 
 				<section id='about' className='scroll-mt-24 py-32'>
 					<SectionReveal>
-						<div className='mx-auto max-w-3xl space-y-6 px-6 sm:px-8'>
-							<SectionHeading title={copy.home.about.title} />
-							<div className='space-y-5 text-base leading-8 text-black/72 dark:text-white/68 sm:text-lg'>
-								{copy.home.about.paragraphs.map((paragraph) => (
-									<p key={paragraph}>{paragraph}</p>
-								))}
+						<div className='mx-auto grid max-w-6xl items-center gap-12 px-6 sm:px-8 lg:grid-cols-[minmax(0,0.85fr)_minmax(0,1fr)] lg:gap-16 lg:px-16'>
+							<div className='relative mx-auto w-full max-w-sm overflow-hidden rounded-3xl border border-black/10 bg-black/[0.02] shadow-sm dark:border-white/10 dark:bg-white/[0.03] lg:mx-0'>
+								<Image
+									src={portraitImage}
+									alt='Portrait of qvanle'
+									sizes='(min-width: 1024px) 360px, (min-width: 640px) 384px, 90vw'
+									className='aspect-[4/5] h-auto w-full object-cover object-center'
+									placeholder='blur'
+								/>
+							</div>
+
+							<div className='space-y-6'>
+								<SectionHeading title={copy.home.about.title} />
+								<div className='space-y-5 text-base leading-8 text-black/72 dark:text-white/68 sm:text-lg'>
+									{copy.home.about.paragraphs.map((paragraph) => (
+										<p key={paragraph}>{paragraph}</p>
+									))}
+								</div>
 							</div>
 						</div>
 					</SectionReveal>

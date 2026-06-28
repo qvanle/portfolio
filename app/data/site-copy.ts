@@ -174,11 +174,11 @@ export const siteCopy: Record<Language, SiteLanguageCopy> = {
 		home: {
 			eyebrow: 'Xin chào',
 			headline: {
-				prefix: 'Nơi dành cho ',
-				strong: 'xây dựng',
+				prefix: '',
+				strong: 'Xây Dựng',
 				middle: ', ',
-				accent: 'chia sẻ kiến thức',
-				suffix: ', và đóng góp lại cho cộng đồng.',
+				accent: 'Học, ',
+				suffix: ' và Chia sẻ.',
 			},
 			intro:
 				'Tôi là qvanle, nhà sáng lập RotexAI, nền tảng tự động hóa quy trình bằng AI giúp tối ưu chi phí cho các tác vụ lặp lại. Trang web này là cách tôi đóng góp lại cho cộng đồng công nghệ đã dạy tôi rất nhiều.',
