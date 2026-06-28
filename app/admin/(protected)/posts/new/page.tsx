@@ -1,5 +1,5 @@
-import { createPost } from '../../../actions/admin-posts';
-import PostForm from '../../../components/admin/post-form';
+import { createPost } from '../../../../actions/admin-posts';
+import PostForm from '../../../../components/admin/post-form';
 
 export default function NewPostPage() {
 	return (

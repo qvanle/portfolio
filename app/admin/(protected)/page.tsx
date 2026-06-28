@@ -1,5 +1,5 @@
-import { listPosts } from '../actions/admin-posts';
-import PostsTable from '../components/admin/posts-table';
+import { listPosts } from '../../actions/admin-posts';
+import PostsTable from '../../components/admin/posts-table';
 
 export default async function AdminDashboardPage() {
 	const result = await listPosts(1);

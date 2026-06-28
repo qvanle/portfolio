@@ -5,7 +5,7 @@ const APP_URL = process.env.NEXT_PUBLIC_APP_URL ?? 'http://localhost:3000';
 export function middleware(request: NextRequest) {
 	const { pathname } = request.nextUrl;
 
-	if (pathname === '/admin/login' || pathname === '/admin/callback') {
+	if (pathname === '/admin/login') {
 		return NextResponse.next();
 	}
 

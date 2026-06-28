@@ -68,7 +68,7 @@ export default function PostModal({ post, relatedPosts }: PostModalProps) {
 
 	return (
 		<AnimatePresence>
-			<div className='fixed inset-0 z-50 flex items-center justify-center'>
+			<div className='fixed inset-0 z-[200] flex items-center justify-center p-3 sm:p-6'>
 				<motion.div
 					initial={{ opacity: 0 }}
 					animate={{ opacity: 1 }}
@@ -85,20 +85,20 @@ export default function PostModal({ post, relatedPosts }: PostModalProps) {
 						duration: 0.5,
 						ease: [0.22, 0.61, 0.36, 1] as const,
 					}}
-					className='relative h-[95vh] w-[95vw] overflow-y-auto rounded-2xl border border-black/8 bg-white shadow-2xl dark:border-white/10 dark:bg-neutral-950'
+					className='relative h-[95vh] w-full max-w-6xl overflow-y-auto rounded-2xl border border-black/8 bg-white shadow-2xl dark:border-white/10 dark:bg-neutral-950'
 				>
 					<button
 						type='button'
 						onClick={close}
 						aria-label='Close'
-						className='sticky top-4 right-4 z-10 float-right mr-4 mt-4 flex h-10 w-10 items-center justify-center rounded-full bg-black/10 text-black/70 transition-colors hover:bg-black/20 dark:bg-white/10 dark:text-white/70 dark:hover:bg-white/20'
+						className='absolute top-4 right-4 z-20 flex h-10 w-10 items-center justify-center rounded-full bg-white/85 text-black/70 shadow-sm transition-colors hover:bg-white dark:bg-black/70 dark:text-white/70 dark:hover:bg-black'
 						data-skip-splash-cursor
 					>
 						<XIcon className='h-5 w-5' />
 					</button>
 
 					{post.image ? (
-						<div className='h-56 w-full overflow-hidden sm:h-72'>
+						<div className='h-28 w-full overflow-hidden rounded-t-2xl sm:h-36'>
 							{/* biome-ignore lint/performance/noImgElement: external CMS image URL */}
 							<img
 								src={post.image}
@@ -108,11 +108,11 @@ export default function PostModal({ post, relatedPosts }: PostModalProps) {
 						</div>
 					) : (
 						<div
-							className={`h-56 w-full rounded-t-2xl bg-gradient-to-br sm:h-72 ${gradients[gradientIndex]}`}
+							className={`h-20 w-full rounded-t-2xl bg-gradient-to-br sm:h-28 ${gradients[gradientIndex]}`}
 						/>
 					)}
 
-					<div className='mx-auto max-w-3xl px-6 py-12 sm:px-10 sm:py-16'>
+					<div className='mx-auto max-w-3xl px-6 py-10 sm:px-10 sm:py-12'>
 						<p className='text-sm uppercase tracking-[0.28em] text-black/45 dark:text-white/40'>
 							{formatPostDate(post.publishedAt, language)}
 						</p>

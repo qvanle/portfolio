@@ -1,24 +1,40 @@
 import { cookies } from 'next/headers';
 
-const APP_URL = process.env.NEXT_PUBLIC_APP_URL ?? 'http://localhost:3000';
 const DIRECTUS_URL =
-	process.env.NEXT_PUBLIC_DIRECTUS_URL ??
 	process.env.DIRECTUS_URL?.replace(/\/$/, '') ??
-	'';
-
+	process.env.NEXT_PUBLIC_DIRECTUS_URL?.replace(/\/$/, '') ??
+	'https://cms.rotexai.com';
 const SESSION_COOKIE = 'admin_session';
-const CALLBACK_URL = `${APP_URL}/admin/callback`;
 
 interface SessionData {
 	access_token: string;
+	refresh_token?: string;
 	expires_at: number;
 }
 
-export function getDirectusSSOUrl(): string {
-	const params = new URLSearchParams({
-		redirect: CALLBACK_URL,
-	});
-	return `${DIRECTUS_URL}/auth/login/keycloak?${params}`;
+export async function setSession(session: {
+	access_token: string;
+	refresh_token?: string;
+	expires: number;
+}) {
+	const cookieStore = await cookies();
+	const expiresAt = Date.now() + session.expires;
+
+	cookieStore.set(
+		SESSION_COOKIE,
+		JSON.stringify({
+			access_token: session.access_token,
+			refresh_token: session.refresh_token,
+			expires_at: expiresAt,
+		}),
+		{
+			httpOnly: true,
+			secure: process.env.NODE_ENV === 'production',
+			sameSite: 'lax',
+			path: '/',
+			maxAge: 60 * 60 * 24 * 7,
+		},
+	);
 }
 
 export async function clearSession() {
@@ -35,58 +51,70 @@ export async function getSession(): Promise<SessionData | null> {
 	try {
 		session = JSON.parse(raw);
 	} catch {
+		await clearSession();
 		return null;
 	}
 
-	if (Date.now() < session.expires_at - 30_000) {
-		return session;
-	}
-
-	// Token expired — try refreshing via Directus session cookie
-	const sessionToken = cookieStore.get('directus_session_token')?.value;
-	if (!sessionToken) return null;
+	if (Date.now() < session.expires_at - 30_000) return session;
+	if (!session.refresh_token) return null;
 
 	try {
-		const serverUrl =
-			process.env.DIRECTUS_URL?.replace(/\/$/, '') ?? DIRECTUS_URL;
-		const res = await fetch(`${serverUrl}/auth/refresh`, {
+		const res = await fetch(`${DIRECTUS_URL}/auth/refresh`, {
 			method: 'POST',
 			headers: {
 				'Content-Type': 'application/json',
-				Cookie: `directus_session_token=${sessionToken}`,
 			},
-			body: JSON.stringify({ mode: 'session' }),
+			body: JSON.stringify({
+				refresh_token: session.refresh_token,
+				mode: 'json',
+			}),
+			cache: 'no-store',
 		});
 
-		if (!res.ok) return null;
+		if (!res.ok) {
+			await clearSession();
+			return null;
+		}
 
 		const json = await res.json();
-		return {
-			access_token: json.data.access_token,
-			expires_at: Date.now() + json.data.expires,
+		const { access_token, expires } = json.data;
+		const refresh_token = json.data.refresh_token ?? session.refresh_token;
+		const refreshed: SessionData = {
+			access_token,
+			refresh_token,
+			expires_at: Date.now() + expires,
 		};
+
+		await setSession({ access_token, refresh_token, expires });
+
+		return refreshed;
 	} catch {
 		return null;
 	}
 }
 
-export async function directusFetch(
-	path: string,
-	init?: RequestInit,
-): Promise<Response> {
+export async function directusFetch(path: string, init: RequestInit = {}) {
 	const session = await getSession();
 	if (!session) {
-		throw new Error('No valid session');
+		throw new Error('Unauthorized');
 	}
 
-	const serverUrl =
-		process.env.DIRECTUS_URL?.replace(/\/$/, '') ?? DIRECTUS_URL;
-	return fetch(`${serverUrl}${path}`, {
+	const headers = new Headers(init.headers);
+	if (!(init.body instanceof FormData)) {
+		headers.set(
+			'Content-Type',
+			headers.get('Content-Type') ?? 'application/json',
+		);
+	}
+
+	if (!headers.has('Authorization')) {
+		headers.set('Authorization', `Bearer ${session.access_token}`);
+	}
+
+	return fetch(`${DIRECTUS_URL}${path}`, {
 		...init,
-		headers: {
-			Authorization: `Bearer ${session.access_token}`,
-			'Content-Type': 'application/json',
-			...init?.headers,
-		},
+		headers,
 	});
 }
+
+export default directusFetch;

@@ -20,6 +20,71 @@ interface ListResult {
 }
 
 const PAGE_SIZE = 20;
+const POST_META_FIELDS = [
+	'id',
+	'status',
+	'slug',
+	'featured',
+	'category',
+	'image',
+	'date_published',
+	'date_created',
+	'date_updated',
+].join(',');
+
+interface DirectusError {
+	message?: string;
+	extensions?: {
+		code?: string;
+		field?: string;
+	};
+}
+
+async function directusErrorMessage(
+	res: Response,
+	fallback: string,
+): Promise<string> {
+	try {
+		const payload = (await res.json()) as { errors?: DirectusError[] };
+		const error = payload.errors?.[0];
+		const field = error?.extensions?.field;
+		const code = error?.extensions?.code;
+
+		if (code === 'RECORD_NOT_UNIQUE' && field === 'slug') {
+			return 'Slug already exists. Choose a different slug.';
+		}
+
+		if (code === 'RECORD_NOT_UNIQUE' && field) {
+			return `${field} must be unique.`;
+		}
+
+		if (code === 'FORBIDDEN' || code === 'INVALID_CREDENTIALS') {
+			return 'CMS permission denied. Check the Directus user role permissions.';
+		}
+
+		if (error?.message === 'An unexpected error occurred.') {
+			return `${fallback} Check Directus permissions for this collection.`;
+		}
+
+		return error?.message ?? fallback;
+	} catch {
+		return `${fallback} (${res.status})`;
+	}
+}
+
+function actionErrorMessage(error: unknown, fallback: string): string {
+	if (error instanceof Error) {
+		if (error.message === 'Unauthorized') {
+			return 'Your CMS session expired. Sign out and sign in again.';
+		}
+
+		if (process.env.NODE_ENV !== 'production') {
+			return `${fallback}: ${error.message}`;
+		}
+	}
+
+	return fallback;
+}
 
 export async function listPosts(
 	page = 1,
@@ -88,7 +153,8 @@ export async function createPost(
 	data: PostFormData,
 ): Promise<ActionResult<AdminPostMeta>> {
 	try {
-		const res = await directusFetch('/items/posts_meta', {
+		const params = new URLSearchParams({ fields: POST_META_FIELDS });
+		const res = await directusFetch(`/items/posts_meta?${params}`, {
 			method: 'POST',
 			body: JSON.stringify({
 				status: data.status,
@@ -97,22 +163,61 @@ export async function createPost(
 				category: data.category,
 				image: data.image,
 				date_published: data.date_published,
-				translations: data.translations,
 			}),
 		});
 
 		if (!res.ok) {
-			const text = await res.text();
-			return { success: false, error: `Create failed: ${text}` };
+			return {
+				success: false,
+				error: await directusErrorMessage(res, 'Create failed.'),
+			};
 		}
 
 		const json = await res.json();
+		const post = json.data as AdminPostMeta;
+
+		if (data.translations.length > 0) {
+			for (const translation of data.translations) {
+				const translationRes = await directusFetch('/items/posts', {
+					method: 'POST',
+					body: JSON.stringify({
+						...translation,
+						posts_meta_id: post.id,
+					}),
+				});
+
+				if (!translationRes.ok) {
+					await directusFetch(`/items/posts_meta/${post.id}`, {
+						method: 'DELETE',
+					});
+
+					return {
+						success: false,
+						error: await directusErrorMessage(
+							translationRes,
+							'Create translations failed.',
+						),
+					};
+				}
+			}
+		}
+
 		revalidatePath('/admin');
 		revalidatePath('/insights');
 		revalidatePath('/');
-		return { success: true, data: json.data };
-	} catch {
-		return { success: false, error: 'Network error creating post.' };
+		return {
+			success: true,
+			data: {
+				...post,
+				translations: data.translations as AdminTranslation[],
+			},
+		};
+	} catch (error) {
+		console.error('Create post failed', error);
+		return {
+			success: false,
+			error: actionErrorMessage(error, 'Network error creating post.'),
+		};
 	}
 }
 
@@ -121,14 +226,18 @@ export async function updatePost(
 	data: Partial<PostFormData> & { translations?: AdminTranslation[] },
 ): Promise<ActionResult<AdminPostMeta>> {
 	try {
-		const res = await directusFetch(`/items/posts_meta/${id}`, {
+		const params = new URLSearchParams({ fields: POST_META_FIELDS });
+		const { translations: _translations, ...postMetaData } = data;
+		const res = await directusFetch(`/items/posts_meta/${id}?${params}`, {
 			method: 'PATCH',
-			body: JSON.stringify(data),
+			body: JSON.stringify(postMetaData),
 		});
 
 		if (!res.ok) {
-			const text = await res.text();
-			return { success: false, error: `Update failed: ${text}` };
+			return {
+				success: false,
+				error: await directusErrorMessage(res, 'Update failed.'),
+			};
 		}
 
 		const json = await res.json();
@@ -136,8 +245,12 @@ export async function updatePost(
 		revalidatePath('/insights');
 		revalidatePath('/');
 		return { success: true, data: json.data };
-	} catch {
-		return { success: false, error: 'Network error updating post.' };
+	} catch (error) {
+		console.error('Update post failed', error);
+		return {
+			success: false,
+			error: actionErrorMessage(error, 'Network error updating post.'),
+		};
 	}
 }
 
@@ -166,9 +279,6 @@ export async function uploadImage(
 	try {
 		const res = await directusFetch('/files', {
 			method: 'POST',
-			headers: {
-				Authorization: `Bearer ${process.env.DIRECTUS_ADMIN_TOKEN}`,
-			},
 			body: formData,
 		});
 

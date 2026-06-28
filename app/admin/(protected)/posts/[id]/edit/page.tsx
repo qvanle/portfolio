@@ -1,6 +1,6 @@
 import { notFound } from 'next/navigation';
-import { getPost, updatePost } from '../../../../actions/admin-posts';
-import PostForm from '../../../../components/admin/post-form';
+import { getPost, updatePost } from '../../../../../actions/admin-posts';
+import PostForm from '../../../../../components/admin/post-form';
 
 interface EditPostPageProps {
 	params: Promise<{ id: string }>;

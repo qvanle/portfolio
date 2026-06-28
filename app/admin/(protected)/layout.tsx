@@ -1,7 +1,7 @@
 import { redirect } from 'next/navigation';
 import type { ReactNode } from 'react';
-import { logoutAction } from '../actions/auth';
-import { getSession } from '../lib/auth';
+import { logoutAction } from '../../actions/auth';
+import { getSession } from '../../lib/auth';
 
 export default async function AdminLayout({
 	children,

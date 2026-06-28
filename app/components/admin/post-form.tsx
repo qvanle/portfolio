@@ -312,27 +312,31 @@ export default function PostForm({ initialData, onSubmit }: PostFormProps) {
 			</div>
 
 			{/* Actions */}
-			<div className='flex items-center gap-4'>
-				<button
-					type='submit'
-					disabled={isPending}
-					className='rounded-full bg-primary-500 px-6 py-2.5 text-sm font-semibold text-black transition-colors hover:bg-primary-400 disabled:opacity-50'
-				>
-					{isPending
-						? 'Saving...'
-						: initialData
-							? 'Update Post'
-							: 'Create Post'}
-				</button>
-				<button
-					type='button'
-					onClick={() => router.push('/admin')}
-					className='text-sm text-black/60 transition-colors hover:text-black dark:text-white/60 dark:hover:text-white'
-				>
-					Cancel
-				</button>
+			<div className='flex flex-col gap-4'>
+				<div className='flex items-center gap-4'>
+					<button
+						type='submit'
+						disabled={isPending}
+						className='rounded-full bg-primary-500 px-6 py-2.5 text-sm font-semibold text-black transition-colors hover:bg-primary-400 disabled:opacity-50'
+					>
+						{isPending
+							? 'Saving...'
+							: initialData
+								? 'Update Post'
+								: 'Create Post'}
+					</button>
+					<button
+						type='button'
+						onClick={() => router.push('/admin')}
+						className='text-sm text-black/60 transition-colors hover:text-black dark:text-white/60 dark:hover:text-white'
+					>
+						Cancel
+					</button>
+				</div>
 				{error && (
-					<p className='text-sm text-red-600 dark:text-red-400'>{error}</p>
+					<p className='rounded-md border border-red-500/30 bg-red-500/10 px-3 py-2 text-sm text-red-700 dark:text-red-300'>
+						{error}
+					</p>
 				)}
 			</div>
 		</form>

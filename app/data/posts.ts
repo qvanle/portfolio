@@ -7,128 +7,123 @@ export interface SitePost {
 	publishedAt: string;
 	featured: boolean;
 	image?: string;
-	body?: string;
 	category?: string;
+	content?: string;
+	body?: string;
 }
 
-interface DirectusPostMeta {
+interface DirectusPostMetaRef {
 	id: string;
 	status: string;
 	slug: string;
 	featured: boolean;
-	category?: string;
+	category?: string | null;
 	image?: { id: string } | string | null;
-	date_published?: string;
-	translations?: DirectusTranslation[];
+	date_published?: string | null;
+	date_created?: string | null;
 }
 
-interface DirectusTranslation {
+interface DirectusPostTranslation {
 	title: string;
 	excerpt: string;
 	body?: string;
 	languages_code: string;
+	posts_meta_id: DirectusPostMetaRef;
 }
 
-const DIRECTUS_URL = process.env.DIRECTUS_URL?.replace(/\/$/, '') ?? '';
+const DIRECTUS_URL =
+	process.env.DIRECTUS_URL?.replace(/\/$/, '') ?? 'https://cms.rotexai.com';
 
-function resolveImageUrl(image: DirectusPostMeta['image']): string | undefined {
+function resolveImageUrl(
+	image: DirectusPostMetaRef['image'],
+): string | undefined {
 	if (!image) return undefined;
 	const id = typeof image === 'string' ? image : image.id;
 	return `${DIRECTUS_URL}/assets/${id}`;
 }
 
-function normalizePost(raw: DirectusPostMeta): SitePost | null {
-	const t = raw.translations?.[0];
-	if (!t) return null;
+function normalizePost(raw: DirectusPostTranslation): SitePost | null {
+	const meta = raw.posts_meta_id;
+	if (!meta || meta.status !== 'published') return null;
 
 	return {
-		title: t.title,
-		slug: raw.slug,
-		excerpt: t.excerpt,
-		publishedAt: raw.date_published ?? '',
-		featured: raw.featured ?? false,
-		image: resolveImageUrl(raw.image),
-		body: t.body ?? undefined,
-		category: raw.category ?? undefined,
+		title: raw.title,
+		slug: meta.slug,
+		excerpt: raw.excerpt,
+		publishedAt: meta.date_published ?? meta.date_created ?? '',
+		featured: Boolean(meta.featured),
+		image: resolveImageUrl(meta.image),
+		category: meta.category ?? undefined,
+		content: raw.body,
+		body: raw.body,
 	};
 }
 
-async function fetchPostsMeta(language: Language): Promise<SitePost[]> {
-	if (!DIRECTUS_URL) return [];
+async function fetchPostTranslations(params: URLSearchParams) {
+	const res = await fetch(`${DIRECTUS_URL}/items/posts?${params}`, {
+		next: { revalidate: 60 },
+	});
 
+	if (!res.ok) return [];
+	const json = await res.json();
+	return (json.data ?? []) as DirectusPostTranslation[];
+}
+
+async function fetchPostsMeta(language: Language): Promise<SitePost[]> {
 	const params = new URLSearchParams({
 		'fields[]': [
-			'id',
-			'slug',
-			'featured',
-			'category',
-			'date_published',
-			'image.id',
-			'translations.title',
-			'translations.excerpt',
-			'translations.languages_code',
+			'title',
+			'excerpt',
+			'body',
+			'languages_code',
+			'posts_meta_id.id',
+			'posts_meta_id.status',
+			'posts_meta_id.slug',
+			'posts_meta_id.featured',
+			'posts_meta_id.category',
+			'posts_meta_id.image.id',
+			'posts_meta_id.date_published',
+			'posts_meta_id.date_created',
 		].join(','),
-		'filter[status][_eq]': 'published',
-		'deep[translations][_filter][languages_code][_eq]': language,
-		sort: '-date_published',
+		'filter[languages_code][_eq]': language,
+		'filter[posts_meta_id][status][_eq]': 'published',
+		sort: '-posts_meta_id.date_published',
 		limit: '100',
 	});
 
-	try {
-		const res = await fetch(`${DIRECTUS_URL}/items/posts_meta?${params}`, {
-			headers: { Accept: 'application/json' },
-			next: { revalidate: 60 },
-		});
-
-		if (!res.ok) return [];
-
-		const json = await res.json();
-		const items: DirectusPostMeta[] = json.data ?? [];
-		return items.map(normalizePost).filter((p): p is SitePost => p !== null);
-	} catch {
-		return [];
-	}
+	const translations = await fetchPostTranslations(params);
+	return translations
+		.map(normalizePost)
+		.filter((post): post is SitePost => Boolean(post));
 }
 
 async function fetchPostBySlug(
 	slug: string,
 	language: Language,
 ): Promise<SitePost | null> {
-	if (!DIRECTUS_URL) return null;
-
 	const params = new URLSearchParams({
 		'fields[]': [
-			'id',
-			'slug',
-			'featured',
-			'category',
-			'date_published',
-			'image.id',
-			'translations.title',
-			'translations.excerpt',
-			'translations.body',
-			'translations.languages_code',
+			'title',
+			'excerpt',
+			'body',
+			'languages_code',
+			'posts_meta_id.id',
+			'posts_meta_id.status',
+			'posts_meta_id.slug',
+			'posts_meta_id.featured',
+			'posts_meta_id.category',
+			'posts_meta_id.image.id',
+			'posts_meta_id.date_published',
+			'posts_meta_id.date_created',
 		].join(','),
-		'filter[slug][_eq]': slug,
-		'filter[status][_eq]': 'published',
-		'deep[translations][_filter][languages_code][_eq]': language,
+		'filter[languages_code][_eq]': language,
+		'filter[posts_meta_id][slug][_eq]': slug,
+		'filter[posts_meta_id][status][_eq]': 'published',
 		limit: '1',
 	});
 
-	try {
-		const res = await fetch(`${DIRECTUS_URL}/items/posts_meta?${params}`, {
-			headers: { Accept: 'application/json' },
-			next: { revalidate: 60 },
-		});
-
-		if (!res.ok) return null;
-
-		const json = await res.json();
-		const items: DirectusPostMeta[] = json.data ?? [];
-		return items.length > 0 ? normalizePost(items[0]) : null;
-	} catch {
-		return null;
-	}
+	const translations = await fetchPostTranslations(params);
+	return normalizePost(translations[0]);
 }
 
 function byNewestFirst(left: SitePost, right: SitePost) {
@@ -142,7 +137,6 @@ export async function getHomePosts(language: Language) {
 	const sorted = [...posts].sort(byNewestFirst);
 	const latest = sorted.slice(0, 6);
 	const featured = sorted.filter((p) => p.featured).slice(0, 6);
-
 	return { featured, latest };
 }
 
