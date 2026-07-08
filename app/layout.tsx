@@ -1,21 +1,54 @@
 import ThemeProvider from 'app/components/providers/ThemeProvider';
 import classNames from 'classnames';
-import type { Metadata } from 'next';
+import type { Metadata, Viewport } from 'next';
 import { cookies } from 'next/headers';
 import type { ReactNode } from 'react';
 import { LanguageProvider } from './components/i18n/language-provider';
 import TopRightControls from './components/layouts/top-right-controls/top-right-controls';
 import { mukta } from './fonts';
+import { siteDescription, siteName, siteUrl } from './lib/site-config';
 import './tailwind.css';
 
 export const metadata: Metadata = {
 	title: {
-		template: '%s | qvanle',
-		default: 'qvanle',
+		template: `%s | ${siteName}`,
+		default: siteName,
 	},
-	description:
-		'A minimalist knowledge-sharing hub for engineering notes, automation workflows, and open-source tools.',
-	metadataBase: new URL('https://dalelarroder.com'),
+	description: siteDescription,
+	metadataBase: new URL(siteUrl),
+	openGraph: {
+		type: 'website',
+		siteName,
+		url: '/',
+		locale: 'en_US',
+		title: siteName,
+		description: siteDescription,
+	},
+	twitter: {
+		card: 'summary_large_image',
+	},
+	robots: {
+		index: true,
+		follow: true,
+		googleBot: {
+			index: true,
+			follow: true,
+			'max-image-preview': 'large',
+			'max-snippet': -1,
+		},
+	},
+	icons: {
+		icon: '/static/favicons/favicon.ico',
+		shortcut: '/static/favicons/favicon.ico',
+		apple: '/static/favicons/favicon.ico',
+	},
+};
+
+export const viewport: Viewport = {
+	themeColor: [
+		{ media: '(prefers-color-scheme: light)', color: '#ffffff' },
+		{ media: '(prefers-color-scheme: dark)', color: '#000000' },
+	],
 };
 
 interface RootLayoutProps {
@@ -33,31 +66,10 @@ export default async function RootLayout({ children }: RootLayoutProps) {
 			suppressHydrationWarning
 			className={classNames(mukta.className, 'scroll-smooth')}
 		>
-			<head>
-				<link
-					rel='apple-touch-icon'
-					sizes='76x76'
-					href='/static/favicons/favicon.ico'
-				/>
-				<link
-					rel='icon'
-					type='image/png'
-					sizes='32x32'
-					href='/static/favicons/favicon.ico'
-				/>
-				<link
-					rel='icon'
-					type='image/png'
-					sizes='16x16'
-					href='/static/favicons/favicon.ico'
-				/>
-				<meta name='msapplication-TileColor' content='#000000' />
-				<meta name='theme-color' content='#000000' />
-			</head>
 			<body className='bg-white text-black antialiased selection:bg-primary-500 selection:text-white dark:bg-black dark:text-white'>
 				<ThemeProvider
 					attribute='class'
-					defaultTheme='dark'
+					defaultTheme='light'
 					themes={['dark', 'light']}
 				>
 					<LanguageProvider initialLanguage={language}>

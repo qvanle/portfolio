@@ -8,11 +8,13 @@ import TopbarNav from './topbar-nav';
 interface PageShellProps {
 	children: ReactNode;
 	splashCursorSize?: 'default' | 'small';
+	particleCount?: number;
 }
 
 export default function PageShell({
 	children,
 	splashCursorSize = 'default',
+	particleCount,
 }: PageShellProps) {
 	const splashProps =
 		splashCursorSize === 'small'
@@ -37,8 +39,8 @@ export default function PageShell({
 				{...splashProps}
 				{...splashPerf}
 			>
-				<ParticleNetwork />
-				<div className='relative min-h-svh'>{children}</div>
+				<ParticleNetwork particleCount={particleCount} />
+				<div className='relative z-10 min-h-svh'>{children}</div>
 			</SplashCursor>
 		</main>
 	);

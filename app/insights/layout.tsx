@@ -4,10 +4,21 @@ import type { ReactNode } from 'react';
 import InsightsLayout from '../components/insights/insights-layout';
 import { getInsightsPosts } from '../data/posts';
 
+const insightsDescription =
+	'Notes on engineering, automation workflows, and the decisions behind building RotexAI.';
+
 export const metadata: Metadata = {
 	title: 'Insights',
-	description:
-		'Notes on engineering, automation workflows, and the decisions behind building RotexAI.',
+	description: insightsDescription,
+	alternates: {
+		canonical: '/insights',
+	},
+	openGraph: {
+		type: 'website',
+		title: 'Insights',
+		description: insightsDescription,
+		url: '/insights',
+	},
 };
 
 export default async function Layout({ children }: { children: ReactNode }) {
