@@ -23,6 +23,26 @@ export interface SitePost {
 	alternateSlug?: string;
 }
 
+interface BlogHeaderTranslation {
+	title: string;
+	slug: string;
+	summary?: string;
+	tags?: string[];
+}
+
+interface BlogHeader {
+	id: string;
+	category?: string;
+	featured?: boolean;
+	cover_image?: string | null;
+	created_at: string;
+	updated_at: string;
+	status: string;
+	languages: Language[];
+	en?: BlogHeaderTranslation;
+	vi?: BlogHeaderTranslation;
+}
+
 interface PostRow {
 	id: string;
 	title: string;
@@ -278,11 +298,53 @@ async function loadArticle(
 	};
 }
 
-export async function getHomePosts(language: Language) {
-	const posts = await listPosts(language);
+async function fetchFeed(name: 'top-10' | 'featured'): Promise<BlogHeader[]> {
+	const response = await fetch(`${getBlogContentUrl()}/feeds/${name}.json`, {
+		next: { revalidate: INDEX_REVALIDATE_SECONDS },
+	});
+	if (!response.ok) {
+		throw new Error(
+			`Blog feed '${name}' request failed with ${response.status}`,
+		);
+	}
+	return response.json();
+}
+
+function headerToPost(header: BlogHeader, language: Language): SitePost | null {
+	const localized = header[language];
+	if (!localized) {
+		return null;
+	}
+	const alternateLanguage: Language = language === 'en' ? 'vi' : 'en';
 	return {
-		featured: posts.filter((post) => post.featured).slice(0, 6),
-		latest: posts.slice(0, 6),
+		id: header.id,
+		title: localized.title,
+		slug: localized.slug,
+		excerpt: localized.summary ?? '',
+		publishedAt: header.created_at,
+		updatedAt: header.updated_at,
+		featured: header.featured === true,
+		tags: localized.tags ?? [],
+		image: header.cover_image
+			? absolutePostUrl(header.id, header.cover_image)
+			: undefined,
+		category: header.category || undefined,
+		alternateSlug: header[alternateLanguage]?.slug,
+	};
+}
+
+export async function getHomePosts(language: Language) {
+	const [latestFeed, featuredFeed] = await Promise.all([
+		fetchFeed('top-10'),
+		fetchFeed('featured'),
+	]);
+	const toPosts = (headers: BlogHeader[]) =>
+		headers
+			.map((header) => headerToPost(header, language))
+			.filter((post): post is SitePost => post !== null);
+	return {
+		featured: toPosts(featuredFeed).slice(0, 6),
+		latest: toPosts(latestFeed).slice(0, 6),
 	};
 }
 

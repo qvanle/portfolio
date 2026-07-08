@@ -17,6 +17,16 @@ describe('blog content reader', () => {
 				if (url.endsWith('/index.db')) {
 					return new Response(await readFile(resolve(contentRoot, 'index.db')));
 				}
+				if (url.endsWith('/feeds/top-10.json')) {
+					return new Response(
+						await readFile(resolve(contentRoot, 'feeds/top-10.json')),
+					);
+				}
+				if (url.endsWith('/feeds/featured.json')) {
+					return new Response(
+						await readFile(resolve(contentRoot, 'feeds/featured.json')),
+					);
+				}
 				if (url.endsWith('/content/index_en.html')) {
 					return new Response(
 						'<article><img src="assets/figure.png"><script>alert(1)</script></article>',
@@ -34,7 +44,7 @@ describe('blog content reader', () => {
 		vi.unstubAllGlobals();
 	});
 
-	it('lists localized featured posts from index.db', async () => {
+	it('lists localized featured and latest posts from the precomputed feeds', async () => {
 		const { getHomePosts } = await import('./posts');
 		const result = await getHomePosts('en');
 		expect(result.featured).toHaveLength(1);
@@ -45,6 +55,10 @@ describe('blog content reader', () => {
 		});
 		expect(result.featured[0]?.image).toMatch(
 			new RegExp(`^https://content\\.example\\.test/${postId}/content/assets/`),
+		);
+		expect(result.latest.map((post) => post.id)).toContain(postId);
+		expect(result.latest[0]?.alternateSlug).toBe(
+			'physmirror-tao-vat-the-guong-nhan-thuc-vat-ly',
 		);
 	});
 
