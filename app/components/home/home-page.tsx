@@ -71,6 +71,7 @@ export default function HomePage({ featured, latest }: HomePageProps) {
 									post={post}
 									index={i}
 									locale={language}
+									href={`/insights/${post.slug}`}
 								/>
 							))}
 						</div>
@@ -94,6 +95,7 @@ export default function HomePage({ featured, latest }: HomePageProps) {
 									post={post}
 									index={i}
 									locale={language}
+									href={`/insights/${post.slug}`}
 								/>
 							))}
 						</div>

@@ -1,7 +1,15 @@
 'use client';
 
+import { useRouter } from 'next/navigation';
 import type { ReactNode } from 'react';
-import { createContext, useContext, useEffect, useMemo, useState } from 'react';
+import {
+	createContext,
+	useCallback,
+	useContext,
+	useEffect,
+	useMemo,
+	useState,
+} from 'react';
 import type { Language } from '../../data/site-copy';
 
 const LANGUAGE_STORAGE_KEY = 'site-language';
@@ -33,6 +41,7 @@ export function LanguageProvider({
 	children,
 	initialLanguage,
 }: LanguageProviderProps) {
+	const router = useRouter();
 	const [language, setLanguageState] = useState<Language>(initialLanguage);
 
 	useEffect(() => {
@@ -57,14 +66,28 @@ export function LanguageProvider({
 		document.documentElement.lang = language;
 	}, [language]);
 
+	const setLanguage = useCallback(
+		(nextLanguage: Language) => {
+			try {
+				window.localStorage.setItem(LANGUAGE_STORAGE_KEY, nextLanguage);
+			} catch {
+				// ignore storage failures
+			}
+			writeLanguageCookie(nextLanguage);
+			document.documentElement.lang = nextLanguage;
+			setLanguageState(nextLanguage);
+			router.refresh();
+		},
+		[router],
+	);
+
 	const value = useMemo<LanguageContextValue>(
 		() => ({
 			language,
-			setLanguage: setLanguageState,
-			toggleLanguage: () =>
-				setLanguageState((current) => (current === 'en' ? 'vi' : 'en')),
+			setLanguage,
+			toggleLanguage: () => setLanguage(language === 'en' ? 'vi' : 'en'),
 		}),
-		[language],
+		[language, setLanguage],
 	);
 
 	return (
