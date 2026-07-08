@@ -4,14 +4,19 @@
   "private": true,
   "scripts": {
     "dev": "next dev",
+    "predev": "node scripts/vendor-sqlite.mjs",
     "build": "next build",
+    "prebuild": "node scripts/vendor-sqlite.mjs",
     "serve": "next start",
     "lint": "biome check --write .",
     "format": "biome format --write .",
     "check": "biome check .",
+    "test": "vitest run",
+    "vendor:sqlite": "node scripts/vendor-sqlite.mjs",
     "prepare": "husky"
   },
   "dependencies": {
+    "@sqlite.org/sqlite-wasm": "^3.53.0-build1",
     "@tailwindcss/postcss": "^4.0.15",
     "@types/node": "24.10.1",
     "@types/react": "19.2.14",
@@ -22,8 +27,11 @@
     "next": "16.2.3",
     "next-themes": "0.4.6",
     "postcss": "8.5.6",
+    "postcss-prefix-selector": "^2.1.1",
     "react": "^19.2.0",
     "react-dom": "^19.2.0",
+    "sanitize-html": "^2.17.5",
+    "sql.js": "^1.14.1",
     "tailwindcss": "^4.0.15",
     "typescript": "5.9.3"
   },
@@ -35,6 +43,9 @@
   "packageManager": "yarn@1.22.22+sha512.a6b2f7906b721bba3d67d4aff083df04dad64c399707841b7acf00f6b133b7ac24255f2652fa22ae3534329dc6180534e98d17432037ff6fd140556e2bb3137e",
   "devDependencies": {
     "@biomejs/biome": "2.4.4",
-    "babel-plugin-react-compiler": "^1.0.0"
+    "@types/sanitize-html": "^2.16.1",
+    "@types/sql.js": "^1.4.11",
+    "babel-plugin-react-compiler": "^1.0.0",
+    "vitest": "^4.1.10"
   }
 }

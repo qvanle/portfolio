@@ -3,10 +3,11 @@
 import classNames from 'classnames';
 import { motion } from 'motion/react';
 import type { ReactNode } from 'react';
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import type { SitePost } from '../../data/posts';
 import { getSiteCopy } from '../../data/site-copy';
 import { merryWeather } from '../../fonts';
+import { searchBlogPostIds } from '../../lib/blog-search';
 import { useLanguage } from '../i18n/language-provider';
 import Footer from '../site/footer';
 import PageShell from '../site/page-shell';
@@ -26,14 +27,6 @@ const fadeIn = (delay: number) => ({
 	transition: { delay, duration: 0.7, ease },
 });
 
-const categoryKeys = [
-	'all',
-	'automation',
-	'product',
-	'workflow',
-	'engineering',
-];
-
 export default function InsightsLayout({
 	posts,
 	children,
@@ -43,22 +36,62 @@ export default function InsightsLayout({
 
 	const [searchQuery, setSearchQuery] = useState('');
 	const [activeCategory, setActiveCategory] = useState('all');
+	const [searchIds, setSearchIds] = useState<string[] | null>(null);
+	const categoryKeys = useMemo(
+		() => [
+			'all',
+			...Array.from(
+				new Set(
+					posts
+						.map((post) => post.category)
+						.filter((category): category is string => Boolean(category)),
+				),
+			).sort(),
+		],
+		[posts],
+	);
+
+	useEffect(() => {
+		const query = searchQuery.trim();
+		if (!query) {
+			setSearchIds(null);
+			return;
+		}
+
+		let cancelled = false;
+		const timer = window.setTimeout(() => {
+			searchBlogPostIds(query, language)
+				.then((ids) => {
+					if (!cancelled) setSearchIds(ids);
+				})
+				.catch(() => {
+					if (cancelled) return;
+					const normalized = query.toLowerCase();
+					setSearchIds(
+						posts
+							.filter(
+								(post) =>
+									post.title.toLowerCase().includes(normalized) ||
+									post.excerpt.toLowerCase().includes(normalized),
+							)
+							.map((post) => post.id),
+					);
+				});
+		}, 180);
+		return () => {
+			cancelled = true;
+			window.clearTimeout(timer);
+		};
+	}, [language, posts, searchQuery]);
 
 	const filteredPosts = useMemo(() => {
-		const query = searchQuery.toLowerCase().trim();
 		return posts.filter((post) => {
 			if (activeCategory !== 'all' && post.category !== activeCategory) {
 				return false;
 			}
-			if (query) {
-				return (
-					post.title.toLowerCase().includes(query) ||
-					post.excerpt.toLowerCase().includes(query)
-				);
-			}
-			return true;
+			return searchIds === null || searchIds.includes(post.id);
 		});
-	}, [posts, searchQuery, activeCategory]);
+	}, [posts, searchIds, activeCategory]);
 
 	return (
 		<PageShell>

@@ -99,7 +99,6 @@ export default function PostModal({ post, relatedPosts }: PostModalProps) {
 
 					{post.image ? (
 						<div className='h-28 w-full overflow-hidden rounded-t-2xl sm:h-36'>
-							{/* biome-ignore lint/performance/noImgElement: external CMS image URL */}
 							<img
 								src={post.image}
 								alt={post.title}
@@ -112,27 +111,31 @@ export default function PostModal({ post, relatedPosts }: PostModalProps) {
 						/>
 					)}
 
-					<div className='mx-auto max-w-3xl px-6 py-10 sm:px-10 sm:py-12'>
-						<p className='text-sm uppercase tracking-[0.28em] text-black/45 dark:text-white/40'>
-							{formatPostDate(post.publishedAt, language)}
-						</p>
-						<h1
-							className={classNames(
-								merryWeather.className,
-								'mt-4 text-3xl leading-tight sm:text-4xl lg:text-5xl',
-							)}
-						>
-							{post.title}
-						</h1>
-						<p className='mt-6 text-lg leading-8 text-black/60 dark:text-white/55'>
-							{post.excerpt}
-						</p>
-
-						{post.body && (
-							<div
-								className='mt-10 space-y-6 border-t border-black/8 pt-10 text-base leading-8 text-black/72 dark:border-white/8 dark:text-white/68 sm:text-lg'
-								dangerouslySetInnerHTML={{ __html: post.body }}
-							/>
+					<div className='mx-auto max-w-4xl px-6 py-10 sm:px-10 sm:py-12'>
+						{post.body ? (
+							<div data-blog-post={post.id}>
+								{post.styles && (
+									<style dangerouslySetInnerHTML={{ __html: post.styles }} />
+								)}
+								<div dangerouslySetInnerHTML={{ __html: post.body }} />
+							</div>
+						) : (
+							<>
+								<p className='text-sm uppercase tracking-[0.28em] text-black/45 dark:text-white/40'>
+									{formatPostDate(post.publishedAt, language)}
+								</p>
+								<h1
+									className={classNames(
+										merryWeather.className,
+										'mt-4 text-3xl leading-tight sm:text-4xl lg:text-5xl',
+									)}
+								>
+									{post.title}
+								</h1>
+								<p className='mt-6 text-lg leading-8 text-black/60 dark:text-white/55'>
+									{post.excerpt}
+								</p>
+							</>
 						)}
 
 						{relatedPosts.length > 0 && (

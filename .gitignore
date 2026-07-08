@@ -20,6 +20,7 @@ public/sitemap.xml
 *.xml
 # rss feed
 /public/feed.xml
+/public/sqlite/
 
 # misc
 .DS_Store

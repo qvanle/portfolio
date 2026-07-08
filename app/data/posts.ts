@@ -1,150 +1,343 @@
+import 'server-only';
+
+import postcss from 'postcss';
+import prefixSelector from 'postcss-prefix-selector';
+import sanitizeHtml from 'sanitize-html';
+import type { Database, SqlJsStatic } from 'sql.js';
+import initSqlJs from 'sql.js/dist/sql-asm.js';
 import type { Language } from './site-copy';
 
 export interface SitePost {
+	id: string;
 	title: string;
 	slug: string;
 	excerpt: string;
 	publishedAt: string;
+	updatedAt: string;
 	featured: boolean;
+	tags: string[];
 	image?: string;
 	category?: string;
-	content?: string;
 	body?: string;
+	styles?: string;
+	alternateSlug?: string;
 }
 
-interface DirectusPostMetaRef {
+interface PostRow {
 	id: string;
-	status: string;
-	slug: string;
-	featured: boolean;
-	category?: string | null;
-	image?: { id: string } | string | null;
-	date_published?: string | null;
-	date_created?: string | null;
-}
-
-interface DirectusPostTranslation {
 	title: string;
-	excerpt: string;
-	body?: string;
-	languages_code: string;
-	posts_meta_id: DirectusPostMetaRef;
+	slug: string;
+	summary: string;
+	language: string;
+	tags: string;
+	category: string;
+	created_at: string;
+	updated_at: string;
+	featured: number;
+	cover_image: string | null;
+	alternate_slug: string | null;
 }
 
-const DIRECTUS_URL =
-	process.env.DIRECTUS_URL?.replace(/\/$/, '') ?? 'https://cms.rotexai.com';
+const INDEX_REVALIDATE_SECONDS = 60;
+let sqlPromise: Promise<SqlJsStatic> | undefined;
 
-function resolveImageUrl(
-	image: DirectusPostMetaRef['image'],
-): string | undefined {
-	if (!image) return undefined;
-	const id = typeof image === 'string' ? image : image.id;
-	return `${DIRECTUS_URL}/assets/${id}`;
+export function getBlogContentUrl() {
+	const value = process.env.BLOG_CONTENT_URL?.trim().replace(/\/$/, '');
+	if (!value) {
+		throw new Error('BLOG_CONTENT_URL is not configured');
+	}
+	return value;
 }
 
-function normalizePost(raw: DirectusPostTranslation): SitePost | null {
-	const meta = raw.posts_meta_id;
-	if (!meta || meta.status !== 'published') return null;
+export async function fetchBlogIndex(): Promise<ArrayBuffer> {
+	const response = await fetch(`${getBlogContentUrl()}/index.db`, {
+		next: { revalidate: INDEX_REVALIDATE_SECONDS },
+	});
+	if (!response.ok) {
+		throw new Error(`Blog index request failed with ${response.status}`);
+	}
+	return response.arrayBuffer();
+}
 
+async function getSql() {
+	sqlPromise ??= initSqlJs();
+	return sqlPromise;
+}
+
+async function openDatabase(): Promise<Database> {
+	const [SQL, bytes] = await Promise.all([getSql(), fetchBlogIndex()]);
+	return new SQL.Database(new Uint8Array(bytes));
+}
+
+function parseTags(value: string): string[] {
+	try {
+		const tags = JSON.parse(value);
+		return Array.isArray(tags)
+			? tags.filter((tag): tag is string => typeof tag === 'string')
+			: [];
+	} catch {
+		return value ? value.split(',').map((tag) => tag.trim()) : [];
+	}
+}
+
+function absolutePostUrl(postId: string, path: string) {
+	return new URL(path, `${getBlogContentUrl()}/${postId}/`).toString();
+}
+
+function rowToPost(row: PostRow): SitePost {
 	return {
-		title: raw.title,
-		slug: meta.slug,
-		excerpt: raw.excerpt,
-		publishedAt: meta.date_published ?? meta.date_created ?? '',
-		featured: Boolean(meta.featured),
-		image: resolveImageUrl(meta.image),
-		category: meta.category ?? undefined,
-		content: raw.body,
-		body: raw.body,
+		id: row.id,
+		title: row.title,
+		slug: row.slug,
+		excerpt: row.summary,
+		publishedAt: row.created_at,
+		updatedAt: row.updated_at,
+		featured: row.featured === 1,
+		tags: parseTags(row.tags),
+		image: row.cover_image
+			? absolutePostUrl(row.id, row.cover_image)
+			: undefined,
+		category: row.category || undefined,
+		alternateSlug: row.alternate_slug ?? undefined,
 	};
 }
 
-async function fetchPostTranslations(params: URLSearchParams) {
-	const res = await fetch(`${DIRECTUS_URL}/items/posts?${params}`, {
-		next: { revalidate: 60 },
-	});
-
-	if (!res.ok) return [];
-	const json = await res.json();
-	return (json.data ?? []) as DirectusPostTranslation[];
+function queryRows(
+	database: Database,
+	sql: string,
+	parameters: Record<string, string>,
+): PostRow[] {
+	const statement = database.prepare(sql);
+	try {
+		statement.bind(parameters);
+		const rows: PostRow[] = [];
+		while (statement.step()) {
+			rows.push(statement.getAsObject() as unknown as PostRow);
+		}
+		return rows;
+	} finally {
+		statement.free();
+	}
 }
 
-async function fetchPostsMeta(language: Language): Promise<SitePost[]> {
-	const params = new URLSearchParams({
-		'fields[]': [
-			'title',
-			'excerpt',
-			'body',
-			'languages_code',
-			'posts_meta_id.id',
-			'posts_meta_id.status',
-			'posts_meta_id.slug',
-			'posts_meta_id.featured',
-			'posts_meta_id.category',
-			'posts_meta_id.image.id',
-			'posts_meta_id.date_published',
-			'posts_meta_id.date_created',
-		].join(','),
-		'filter[languages_code][_eq]': language,
-		'filter[posts_meta_id][status][_eq]': 'published',
-		sort: '-posts_meta_id.date_published',
-		limit: '100',
-	});
+const POST_SELECT = `
+	SELECT
+		p.id, p.category, p.created_at, p.updated_at, p.featured,
+		p.cover_image, t.language, t.title, t.slug, t.summary, t.tags,
+		alternate.slug AS alternate_slug
+	FROM posts p
+	JOIN post_translations t ON t.post_id = p.id
+	LEFT JOIN post_translations alternate
+		ON alternate.post_id = p.id AND alternate.language <> t.language
+`;
 
-	const translations = await fetchPostTranslations(params);
-	return translations
-		.map(normalizePost)
-		.filter((post): post is SitePost => Boolean(post));
+async function listPosts(language: Language): Promise<SitePost[]> {
+	const database = await openDatabase();
+	try {
+		return queryRows(
+			database,
+			`${POST_SELECT}
+			 WHERE p.status = 'published' AND t.language = :language
+			 ORDER BY p.created_at DESC`,
+			{ ':language': language },
+		).map(rowToPost);
+	} finally {
+		database.close();
+	}
 }
 
-async function fetchPostBySlug(
-	slug: string,
-	language: Language,
-): Promise<SitePost | null> {
-	const params = new URLSearchParams({
-		'fields[]': [
-			'title',
-			'excerpt',
-			'body',
-			'languages_code',
-			'posts_meta_id.id',
-			'posts_meta_id.status',
-			'posts_meta_id.slug',
-			'posts_meta_id.featured',
-			'posts_meta_id.category',
-			'posts_meta_id.image.id',
-			'posts_meta_id.date_published',
-			'posts_meta_id.date_created',
-		].join(','),
-		'filter[languages_code][_eq]': language,
-		'filter[posts_meta_id][slug][_eq]': slug,
-		'filter[posts_meta_id][status][_eq]': 'published',
-		limit: '1',
-	});
-
-	const translations = await fetchPostTranslations(params);
-	return normalizePost(translations[0]);
+function resolveUrl(value: string, baseUrl: string) {
+	if (
+		!value ||
+		value.startsWith('#') ||
+		/^(?:[a-z][a-z\d+.-]*:|\/\/)/i.test(value)
+	) {
+		return value;
+	}
+	return new URL(value, baseUrl).toString();
 }
 
-function byNewestFirst(left: SitePost, right: SitePost) {
-	return (
-		new Date(right.publishedAt).getTime() - new Date(left.publishedAt).getTime()
+function rewriteSrcset(value: string, baseUrl: string) {
+	return value
+		.split(',')
+		.map((candidate) => {
+			const [url, ...descriptor] = candidate.trim().split(/\s+/);
+			return [resolveUrl(url, baseUrl), ...descriptor].join(' ');
+		})
+		.join(', ');
+}
+
+function sanitizeArticle(html: string, baseUrl: string) {
+	const urlAttributes = new Set(['href', 'src', 'poster']);
+	return sanitizeHtml(html, {
+		allowedTags: [
+			...sanitizeHtml.defaults.allowedTags,
+			'article',
+			'img',
+			'figure',
+			'figcaption',
+			'picture',
+			'source',
+			'svg',
+			'path',
+			'circle',
+			'line',
+			'polyline',
+			'polygon',
+			'rect',
+			'video',
+		],
+		allowedAttributes: {
+			'*': ['class', 'id', 'aria-*', 'data-*'],
+			a: ['href', 'target', 'rel', 'title'],
+			img: ['src', 'srcset', 'sizes', 'alt', 'width', 'height', 'loading'],
+			source: ['src', 'srcset', 'type', 'media'],
+			video: ['src', 'poster', 'controls', 'preload', 'muted', 'loop'],
+			svg: ['viewBox', 'fill', 'stroke', 'aria-hidden'],
+			path: ['d', 'fill', 'stroke', 'stroke-width'],
+			circle: ['cx', 'cy', 'r', 'fill', 'stroke'],
+			line: ['x1', 'x2', 'y1', 'y2', 'stroke'],
+			polyline: ['points', 'fill', 'stroke'],
+			polygon: ['points', 'fill', 'stroke'],
+			rect: ['x', 'y', 'width', 'height', 'rx', 'fill', 'stroke'],
+		},
+		allowedSchemes: ['http', 'https', 'mailto'],
+		transformTags: {
+			'*': (tagName, attributes) => {
+				const rewritten = { ...attributes };
+				for (const attribute of urlAttributes) {
+					if (rewritten[attribute]) {
+						rewritten[attribute] = resolveUrl(rewritten[attribute], baseUrl);
+					}
+				}
+				if (rewritten.srcset) {
+					rewritten.srcset = rewriteSrcset(rewritten.srcset, baseUrl);
+				}
+				if (tagName === 'a' && rewritten.target === '_blank') {
+					rewritten.rel = 'noopener noreferrer';
+				}
+				return { tagName, attribs: rewritten };
+			},
+		},
+	});
+}
+
+function rewriteCssUrls(css: string, baseUrl: string) {
+	return css.replace(
+		/url\(\s*(['"]?)([^'")]+)\1\s*\)/gi,
+		(_match, quote, url) => {
+			return `url(${quote}${resolveUrl(url.trim(), baseUrl)}${quote})`;
+		},
 	);
 }
 
+async function scopeArticleCss(css: string, postId: string, baseUrl: string) {
+	const wrapper = `[data-blog-post="${postId}"]`;
+	const result = await postcss([
+		prefixSelector({
+			prefix: wrapper,
+			transform(prefix: string, selector: string) {
+				if (
+					selector === ':root' ||
+					selector === 'html' ||
+					selector === 'body'
+				) {
+					return prefix;
+				}
+				return `${prefix} ${selector}`;
+			},
+		}),
+	]).process(rewriteCssUrls(css, baseUrl), { from: undefined });
+	return result.css;
+}
+
+async function loadArticle(
+	post: SitePost,
+	language: Language,
+): Promise<SitePost> {
+	const baseUrl = `${getBlogContentUrl()}/${post.id}/content/`;
+	const [htmlResponse, cssResponse] = await Promise.all([
+		fetch(`${baseUrl}index_${language}.html`, {
+			next: { revalidate: INDEX_REVALIDATE_SECONDS },
+		}),
+		fetch(`${baseUrl}styles.css`, {
+			next: { revalidate: INDEX_REVALIDATE_SECONDS },
+		}),
+	]);
+	if (!htmlResponse.ok || !cssResponse.ok) {
+		throw new Error(`Article assets unavailable for ${post.id}/${language}`);
+	}
+	const [html, css] = await Promise.all([
+		htmlResponse.text(),
+		cssResponse.text(),
+	]);
+	return {
+		...post,
+		body: sanitizeArticle(html, baseUrl),
+		styles: await scopeArticleCss(css, post.id, baseUrl),
+	};
+}
+
 export async function getHomePosts(language: Language) {
-	const posts = await fetchPostsMeta(language);
-	const sorted = [...posts].sort(byNewestFirst);
-	const latest = sorted.slice(0, 6);
-	const featured = sorted.filter((p) => p.featured).slice(0, 6);
-	return { featured, latest };
+	const posts = await listPosts(language);
+	return {
+		featured: posts.filter((post) => post.featured).slice(0, 6),
+		latest: posts.slice(0, 6),
+	};
 }
 
 export async function getInsightsPosts(language: Language) {
-	const posts = await fetchPostsMeta(language);
-	return [...posts].sort(byNewestFirst);
+	return listPosts(language);
 }
 
 export async function getPostBySlug(slug: string, language: Language) {
-	return fetchPostBySlug(slug, language);
+	const database = await openDatabase();
+	try {
+		const rows = queryRows(
+			database,
+			`${POST_SELECT}
+			 WHERE p.status = 'published'
+			 AND t.language = :language
+			 AND p.id = (
+				SELECT post_id FROM post_translations WHERE slug = :slug LIMIT 1
+			 )
+			 LIMIT 1`,
+			{ ':language': language, ':slug': slug },
+		);
+		return rows[0] ? loadArticle(rowToPost(rows[0]), language) : null;
+	} finally {
+		database.close();
+	}
+}
+
+export async function getAllPostRoutes() {
+	const database = await openDatabase();
+	try {
+		const result = database.exec(`
+			SELECT
+				t.language, t.slug, p.updated_at,
+				alternate.language AS alternate_language,
+				alternate.slug AS alternate_slug
+			FROM post_translations t
+			JOIN posts p ON p.id = t.post_id
+			LEFT JOIN post_translations alternate
+				ON alternate.post_id = t.post_id AND alternate.language <> t.language
+			WHERE p.status = 'published'
+			ORDER BY p.created_at DESC
+		`)[0];
+		if (!result) return [];
+		return result.values.map(
+			([language, slug, updatedAt, alternateLanguage, alternateSlug]) => ({
+				language: String(language) as Language,
+				slug: String(slug),
+				updatedAt: String(updatedAt),
+				alternateLanguage: alternateLanguage
+					? (String(alternateLanguage) as Language)
+					: undefined,
+				alternateSlug: alternateSlug ? String(alternateSlug) : undefined,
+			}),
+		);
+	} finally {
+		database.close();
+	}
 }
