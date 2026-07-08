@@ -107,16 +107,6 @@
           }
         }
       }
-    },
-    {
-      "includes": ["app/components/admin/post-form.tsx"],
-      "linter": {
-        "rules": {
-          "performance": {
-            "noImgElement": "off"
-          }
-        }
-      }
     }
   ],
   "assist": {
