@@ -98,11 +98,11 @@ export default function PostModal({ post, relatedPosts }: PostModalProps) {
 					</button>
 
 					{post.image ? (
-						<div className='h-28 w-full overflow-hidden rounded-t-2xl sm:h-36'>
+						<div className='h-52 w-full overflow-hidden rounded-t-2xl bg-white sm:h-72 lg:h-[22rem] dark:bg-white'>
 							<img
 								src={post.image}
 								alt={post.title}
-								className='h-full w-full object-cover'
+								className='h-full w-full object-contain'
 							/>
 						</div>
 					) : (

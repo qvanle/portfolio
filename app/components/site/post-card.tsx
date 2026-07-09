@@ -38,12 +38,12 @@ export default function PostCard({
 	const card = (
 		<article
 			className={classNames(
-				'group flex cursor-pointer flex-col overflow-hidden rounded-2xl border border-black/8 bg-white shadow-sm transition-shadow hover:shadow-md dark:border-white/10 dark:bg-white/5',
+				'group flex h-full min-h-[28rem] cursor-pointer flex-col overflow-hidden rounded-2xl border border-black/8 bg-white shadow-sm transition-shadow hover:shadow-md dark:border-white/10 dark:bg-white/5',
 				className,
 			)}
 		>
 			{post.image ? (
-				<div className='relative h-40 w-full overflow-hidden'>
+				<div className='relative aspect-[16/8] w-full shrink-0 overflow-hidden'>
 					<img
 						src={post.image}
 						alt={post.title}
@@ -52,7 +52,7 @@ export default function PostCard({
 				</div>
 			) : (
 				<div
-					className={`relative flex h-40 w-full items-end overflow-hidden bg-gradient-to-br ${gradients[index % gradients.length]} p-4`}
+					className={`relative flex aspect-[16/8] w-full shrink-0 items-end overflow-hidden bg-gradient-to-br ${gradients[index % gradients.length]} p-4`}
 				>
 					<span className='text-xs font-medium uppercase tracking-widest text-white/70'>
 						{formatPostDate(post.publishedAt, locale)}
@@ -82,7 +82,7 @@ export default function PostCard({
 
 	if (href) {
 		return (
-			<Link href={href} className='block' data-skip-splash-cursor>
+			<Link href={href} className='block h-full' data-skip-splash-cursor>
 				{card}
 			</Link>
 		);
