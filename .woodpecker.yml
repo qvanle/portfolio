@@ -1,3 +1,15 @@
+# github.com has been intermittently unreachable (connection timeouts, ~15-35%
+# failure rate) from CI nodes across multiple hosts/providers - a regional
+# network routing issue upstream of us. The default clone plugin settings
+# aren't visibly retrying on this failure mode in practice, so raise attempts/
+# backoff explicitly.
+clone:
+  git:
+    image: woodpeckerci/plugin-git
+    settings:
+      backoff: 10s
+      attempts: 8
+
 steps:
   - name: verify
     image: node:20-bookworm-slim
