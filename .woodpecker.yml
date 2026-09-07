@@ -56,13 +56,37 @@ steps:
         set -eu
         : "$${GITOPS_TOKEN:?GITOPS_TOKEN is not set}"
 
+        # github.com has been intermittently unreachable (connection timeouts) from
+        # our CI nodes regardless of which one runs the job - a regional routing
+        # issue upstream of us, not something a config change here can fix. Retry
+        # with backoff so a transient blip doesn't fail the whole pipeline.
+        retry() {
+          attempt=1
+          max_attempts=5
+          delay=5
+          while ! "$@"; do
+            if [ "$attempt" -ge "$max_attempts" ]; then
+              echo "Command failed after $attempt attempts: $*" >&2
+              return 1
+            fi
+            echo "Attempt $attempt/$max_attempts failed: $*  (retrying in $${delay}s)" >&2
+            sleep "$delay"
+            attempt=$((attempt + 1))
+            delay=$((delay * 2))
+          done
+        }
+
         workspace_dir="$(pwd)"
         workdir="$(mktemp -d)"
         trap 'rm -rf "$workdir"' EXIT
 
-        git clone \
-          "https://x-access-token:$${GITOPS_TOKEN}@github.com/rotexai/manifest.git" \
-          "$workdir/manifest"
+        clone_manifest() {
+          rm -rf "$workdir/manifest"
+          git clone \
+            "https://x-access-token:$${GITOPS_TOKEN}@github.com/rotexai/manifest.git" \
+            "$workdir/manifest"
+        }
+        retry clone_manifest
         cd "$workdir/manifest"
 
         git config user.name "woodpecker"
@@ -143,7 +167,7 @@ steps:
 
         git add "$manifest_file"
         git commit -m "chore(web-qvanle): promote $${image_digest}"
-        git push origin main
+        retry git push origin main
     when:
       branch: main
       event:
