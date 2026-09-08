@@ -95,7 +95,7 @@ steps:
         clone_manifest() {
           rm -rf "$workdir/manifest"
           git clone \
-            "https://x-access-token:$${GITOPS_TOKEN}@github.com/rotexai/manifest.git" \
+            "https://x-access-token:$${GITOPS_TOKEN}@internal.rotexai.com/codebase/rotexai/manifest.git" \
             "$workdir/manifest"
         }
         retry clone_manifest
