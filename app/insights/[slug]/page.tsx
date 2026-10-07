@@ -17,6 +17,9 @@ export const dynamicParams = false;
 
 export async function generateStaticParams() {
 	const routes = await getAllPostRoutes();
+	// A static export fails outright on an empty list. With no posts yet, emit one
+	// placeholder; it resolves to notFound() and is not linked or in the sitemap.
+	if (routes.length === 0) return [{ slug: '_' }];
 	return routes.map(({ slug }) => ({ slug }));
 }
 
