@@ -182,7 +182,10 @@ export default function TopbarNav() {
 
 	return (
 		<>
-			<div className='fixed left-1/2 top-4 z-50 hidden -translate-x-1/2 lg:block'>
+			<div
+				data-topbar-pill
+				className='fixed left-1/2 top-4 z-50 hidden -translate-x-1/2 lg:block'
+			>
 				<nav className='flex items-center gap-1 rounded-full border border-black/10 bg-white/90 px-2 py-2 shadow-lg shadow-black/5 backdrop-blur-md dark:border-white/10 dark:bg-black/80 dark:shadow-black/30'>
 					{navigationItems.map((item) => (
 						<NavItem

@@ -239,3 +239,51 @@ html[data-page-transition="backward"]::view-transition-new(root) {
 		transform: translateX(0);
 	}
 }
+
+@keyframes fade-up {
+	from {
+		opacity: 0;
+		transform: translateY(20px);
+	}
+	to {
+		opacity: 1;
+		transform: translateY(0);
+	}
+}
+
+[data-fade-up] {
+	animation: fade-up 0.7s cubic-bezier(0.22, 0.61, 0.36, 1) both;
+}
+
+@media (prefers-reduced-motion: reduce) {
+	[data-fade-up] {
+		animation: none;
+	}
+}
+
+/*
+  Post bodies are authored HTML with their own scoped stylesheet (Inter, one
+  800-weight h1, unweighted h2/h3 once Tailwind's preflight zeroes them). Pull them
+  onto the site's type: Mukta body text, Merriweather headings at a single weight.
+  !important is needed to beat the article's own selectors.
+*/
+.post-body article {
+	font-family: inherit !important;
+}
+
+.post-body h1,
+.post-body h2,
+.post-body h3 {
+	font-family: var(--font-merriweather), Georgia, serif !important;
+	font-weight: 700 !important;
+	letter-spacing: -0.01em !important;
+}
+
+.post-body h1 {
+	letter-spacing: -0.02em !important;
+}
+
+/* The floating nav pill would sit on top of the article while reading. */
+body[data-post-open] [data-topbar-pill] {
+	display: none;
+}

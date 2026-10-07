@@ -61,6 +61,7 @@ interface InsightsCopy {
 	noResults: string;
 	categories: Record<string, string>;
 	relatedLabel: string;
+	backLabel: string;
 }
 
 interface DrawerCopy {
@@ -150,8 +151,11 @@ export const siteCopy: Record<Language, SiteLanguageCopy> = {
 				product: 'Product',
 				workflow: 'Workflow',
 				engineering: 'Engineering',
+				general: 'General',
+				computervision: 'Computer Vision',
 			},
 			relatedLabel: 'More to read',
+			backLabel: 'All articles',
 		},
 		drawer: {
 			title: 'Build, share, and give back.',
@@ -230,8 +234,11 @@ export const siteCopy: Record<Language, SiteLanguageCopy> = {
 				product: 'Sản phẩm',
 				workflow: 'Quy trình',
 				engineering: 'Kỹ thuật',
+				general: 'Chung',
+				computervision: 'Thị giác máy tính',
 			},
 			relatedLabel: 'Đọc thêm',
+			backLabel: 'Tất cả bài viết',
 		},
 		drawer: {
 			title: 'Xây dựng, chia sẻ, và đóng góp lại.',
@@ -246,4 +253,11 @@ export const siteCopy: Record<Language, SiteLanguageCopy> = {
 
 export function getSiteCopy(language: Language) {
 	return siteCopy[language];
+}
+
+// Categories come from the blog index as free text ("Computer Vision"); the copy
+// is keyed by a normalised form so unknown categories fall back to their raw name.
+export function categoryLabel(language: Language, category: string) {
+	const key = category.toLowerCase().replace(/[^a-z]/g, '');
+	return siteCopy[language].insights.categories[key] ?? category;
 }

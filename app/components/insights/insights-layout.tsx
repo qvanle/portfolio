@@ -1,11 +1,14 @@
 'use client';
 
 import classNames from 'classnames';
-import { motion } from 'motion/react';
 import type { ReactNode } from 'react';
 import { useEffect, useMemo, useState } from 'react';
 import type { SitePost } from '../../data/posts';
-import { getSiteCopy, type Language } from '../../data/site-copy';
+import {
+	categoryLabel,
+	getSiteCopy,
+	type Language,
+} from '../../data/site-copy';
 import { merryWeather } from '../../fonts';
 import { searchBlogPostIds } from '../../lib/blog-search';
 import { useLanguage } from '../i18n/language-provider';
@@ -19,12 +22,11 @@ interface InsightsLayoutProps {
 	children: ReactNode;
 }
 
-const ease = [0.22, 0.61, 0.36, 1] as const;
-
-const fadeIn = (delay: number) => ({
-	initial: { opacity: 0, y: 20 },
-	animate: { opacity: 1, y: 0 },
-	transition: { delay, duration: 0.7, ease },
+// CSS animation (see tailwind.css) instead of a JS one: the SSR HTML must not ship
+// these elements hidden, or the header stays blank until hydration finishes.
+const fadeUp = (delay: number) => ({
+	'data-fade-up': '',
+	style: { animationDelay: `${delay}s` },
 });
 
 export default function InsightsLayout({
@@ -97,31 +99,31 @@ export default function InsightsLayout({
 	return (
 		<PageShell>
 			<header className='mx-auto max-w-3xl px-6 pt-32 pb-16 text-center sm:px-8'>
-				<motion.p
-					{...fadeIn(0.1)}
+				<p
+					{...fadeUp(0.1)}
 					className='text-xs uppercase tracking-[0.35em] text-black/40 dark:text-white/40'
 				>
 					{copy.insights.eyebrow}
-				</motion.p>
-				<motion.h1
-					{...fadeIn(0.2)}
+				</p>
+				<h1
+					{...fadeUp(0.2)}
 					className={classNames(
 						merryWeather.className,
 						'mt-6 text-4xl leading-none sm:text-5xl',
 					)}
 				>
 					{copy.insights.title}
-				</motion.h1>
-				<motion.p
-					{...fadeIn(0.35)}
+				</h1>
+				<p
+					{...fadeUp(0.35)}
 					className='mx-auto mt-6 max-w-2xl text-base leading-8 text-black/70 dark:text-white/68 sm:text-lg'
 				>
 					{copy.insights.intro}
-				</motion.p>
+				</p>
 			</header>
 
 			<div className='mx-auto max-w-6xl px-6 pb-10 sm:px-8 lg:px-16'>
-				<motion.div {...fadeIn(0.45)} className='space-y-5'>
+				<div {...fadeUp(0.45)} className='space-y-5'>
 					<div className='relative'>
 						<svg
 							aria-hidden='true'
@@ -160,11 +162,13 @@ export default function InsightsLayout({
 								)}
 								data-skip-splash-cursor
 							>
-								{copy.insights.categories[key] ?? key}
+								{key === 'all'
+									? copy.insights.categories.all
+									: categoryLabel(language, key)}
 							</button>
 						))}
 					</div>
-				</motion.div>
+				</div>
 			</div>
 
 			<section className='bg-black/[0.015] py-28 dark:bg-white/[0.02]'>

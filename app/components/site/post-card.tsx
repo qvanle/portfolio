@@ -3,6 +3,8 @@
 import classNames from 'classnames';
 import Link from 'next/link';
 import type { SitePost } from '../../data/posts';
+import { categoryLabel } from '../../data/site-copy';
+import { coverFit } from '../../lib/site-config';
 
 interface PostCardProps {
 	post: SitePost;
@@ -47,7 +49,12 @@ export default function PostCard({
 					<img
 						src={post.image}
 						alt={post.title}
-						className='h-full w-full object-cover transition-transform duration-300 group-hover:scale-105'
+						className={classNames(
+							'h-full w-full transition-transform duration-300 group-hover:scale-105',
+							coverFit[post.id] === 'contain'
+								? 'bg-white object-contain p-2'
+								: 'object-cover',
+						)}
 					/>
 				</div>
 			) : (
@@ -62,7 +69,7 @@ export default function PostCard({
 			<div className='flex flex-1 flex-col p-5'>
 				{post.category && (
 					<p className='mb-2 text-xs font-medium uppercase tracking-widest text-primary-600 dark:text-primary-400'>
-						{post.category}
+						{categoryLabel(locale, post.category)}
 					</p>
 				)}
 				<h3 className='line-clamp-2 text-base font-semibold leading-snug transition-colors group-hover:text-primary-500'>

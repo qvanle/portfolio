@@ -8,7 +8,6 @@ import type { SitePost } from '../../data/posts';
 import { getSiteCopy } from '../../data/site-copy';
 import { merryWeather } from '../../fonts';
 import { useLanguage } from '../i18n/language-provider';
-import { XIcon } from '../layouts/icons/x-icon';
 import PostCard from '../site/post-card';
 
 interface PostModalProps {
@@ -80,8 +79,11 @@ export default function PostModal({ post, relatedPosts }: PostModalProps) {
 
 	useEffect(() => {
 		document.body.style.overflow = 'hidden';
+		// Lets CSS hide the floating nav pill, which would cover the article text.
+		document.body.dataset.postOpen = '';
 		return () => {
 			document.body.style.overflow = '';
+			delete document.body.dataset.postOpen;
 		};
 	}, []);
 
@@ -106,15 +108,18 @@ export default function PostModal({ post, relatedPosts }: PostModalProps) {
 					}}
 					className='relative h-[95vh] w-full max-w-6xl overflow-y-auto rounded-2xl border border-black/8 bg-white shadow-2xl dark:border-white/10 dark:bg-neutral-950'
 				>
-					<button
-						type='button'
-						onClick={close}
-						aria-label='Close'
-						className='absolute top-4 right-4 z-20 flex h-10 w-10 items-center justify-center rounded-full bg-white/85 text-black/70 shadow-sm transition-colors hover:bg-white dark:bg-black/70 dark:text-white/70 dark:hover:bg-black'
-						data-skip-splash-cursor
-					>
-						<XIcon className='h-5 w-5' />
-					</button>
+					{/* Top-left and labelled: the language/theme controls own the top-right, and below lg the mobile bar owns the top row, so sit under it. */}
+					<div className='sticky top-0 z-20 h-0'>
+						<button
+							type='button'
+							onClick={close}
+							className='absolute top-16 left-4 flex h-10 lg:top-4 items-center gap-2 rounded-full bg-white/90 px-4 text-sm font-medium text-black/75 shadow-sm ring-1 ring-black/8 transition-colors hover:bg-white hover:text-black dark:bg-black/70 dark:text-white/75 dark:ring-white/10 dark:hover:bg-black dark:hover:text-white'
+							data-skip-splash-cursor
+						>
+							<span aria-hidden='true'>←</span>
+							{copy.insights.backLabel}
+						</button>
+					</div>
 
 					{post.image ? (
 						<div className='h-52 w-full overflow-hidden rounded-t-2xl bg-white sm:h-72 lg:h-[22rem] dark:bg-white'>
@@ -132,7 +137,7 @@ export default function PostModal({ post, relatedPosts }: PostModalProps) {
 
 					<div className='mx-auto max-w-4xl px-6 py-10 sm:px-10 sm:py-12'>
 						{post.body ? (
-							<div data-blog-post={post.id}>
+							<div data-blog-post={post.id} className='post-body'>
 								{post.styles && (
 									<style dangerouslySetInnerHTML={{ __html: post.styles }} />
 								)}
