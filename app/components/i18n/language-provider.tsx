@@ -1,6 +1,5 @@
 'use client';
 
-import { useRouter } from 'next/navigation';
 import type { ReactNode } from 'react';
 import {
 	createContext,
@@ -41,7 +40,6 @@ export function LanguageProvider({
 	children,
 	initialLanguage,
 }: LanguageProviderProps) {
-	const router = useRouter();
 	const [language, setLanguageState] = useState<Language>(initialLanguage);
 
 	useEffect(() => {
@@ -66,20 +64,16 @@ export function LanguageProvider({
 		document.documentElement.lang = language;
 	}, [language]);
 
-	const setLanguage = useCallback(
-		(nextLanguage: Language) => {
-			try {
-				window.localStorage.setItem(LANGUAGE_STORAGE_KEY, nextLanguage);
-			} catch {
-				// ignore storage failures
-			}
-			writeLanguageCookie(nextLanguage);
-			document.documentElement.lang = nextLanguage;
-			setLanguageState(nextLanguage);
-			router.refresh();
-		},
-		[router],
-	);
+	const setLanguage = useCallback((nextLanguage: Language) => {
+		try {
+			window.localStorage.setItem(LANGUAGE_STORAGE_KEY, nextLanguage);
+		} catch {
+			// ignore storage failures
+		}
+		writeLanguageCookie(nextLanguage);
+		document.documentElement.lang = nextLanguage;
+		setLanguageState(nextLanguage);
+	}, []);
 
 	const value = useMemo<LanguageContextValue>(
 		() => ({

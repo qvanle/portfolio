@@ -3,7 +3,7 @@
 import classNames from 'classnames';
 import { AnimatePresence, motion } from 'motion/react';
 import { useRouter } from 'next/navigation';
-import { useCallback, useEffect } from 'react';
+import { useCallback, useEffect, useRef } from 'react';
 import type { SitePost } from '../../data/posts';
 import { getSiteCopy } from '../../data/site-copy';
 import { merryWeather } from '../../fonts';
@@ -50,6 +50,25 @@ export default function PostModal({ post, relatedPosts }: PostModalProps) {
 	const close = useCallback(() => {
 		router.push('/insights');
 	}, [router]);
+
+	// Each post is a static page in one language; follow the reader's language
+	// to the translated slug, on arrival and whenever they switch.
+	const switched = useRef(false);
+	useEffect(() => {
+		let target = language;
+		if (!switched.current) {
+			switched.current = true;
+			try {
+				const stored = window.localStorage.getItem('site-language');
+				if (stored === 'en' || stored === 'vi') target = stored;
+			} catch {
+				// ignore storage failures
+			}
+		}
+		if (target !== post.language && post.alternateSlug) {
+			router.replace(`/insights/${post.alternateSlug}`);
+		}
+	}, [language, post.language, post.alternateSlug, router]);
 
 	useEffect(() => {
 		const handleKeyDown = (e: KeyboardEvent) => {

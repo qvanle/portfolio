@@ -1,5 +1,3 @@
-'use server';
-
 interface ContactFormData {
 	name: string;
 	email: string;
@@ -19,13 +17,13 @@ export async function submitContactForm(
 		return { success: false, error: 'Please fill in all required fields.' };
 	}
 
-	const baseUrl = process.env.DIRECTUS_URL?.trim();
+	// The site is static, so the form posts straight from the browser to a
+	// form-handling service (Formspree-compatible JSON endpoint).
+	const endpoint = process.env.NEXT_PUBLIC_CONTACT_ENDPOINT?.trim();
 
-	if (!baseUrl) {
+	if (!endpoint) {
 		return { success: false, error: 'Service unavailable.' };
 	}
-
-	const endpoint = `${baseUrl.replace(/\/$/, '')}/items/contact_submissions`;
 
 	try {
 		const response = await fetch(endpoint, {

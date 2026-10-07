@@ -4,10 +4,10 @@
   "private": true,
   "scripts": {
     "dev": "next dev",
-    "predev": "node scripts/vendor-sqlite.mjs",
+    "predev": "node scripts/vendor-sqlite.mjs && node scripts/fetch-blog-index.mjs",
     "build": "next build",
-    "prebuild": "node scripts/vendor-sqlite.mjs",
-    "serve": "next start",
+    "prebuild": "node scripts/vendor-sqlite.mjs && node scripts/fetch-blog-index.mjs",
+    "serve": "npx serve out",
     "lint": "biome check --write .",
     "format": "biome format --write .",
     "check": "biome check .",

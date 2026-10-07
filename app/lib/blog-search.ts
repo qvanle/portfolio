@@ -43,7 +43,7 @@ async function initializeSqlite() {
 async function loadDatabase() {
 	const [sqlite3, response] = await Promise.all([
 		initializeSqlite(),
-		fetch('/api/blog/index'),
+		fetch('/blog-index.db'),
 	]);
 	if (!response.ok) {
 		throw new Error(`Blog search index request failed with ${response.status}`);

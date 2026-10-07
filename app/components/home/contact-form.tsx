@@ -1,8 +1,8 @@
 'use client';
 
 import { type FormEvent, useState } from 'react';
-import { submitContactForm } from '../../actions/contact';
 import { getSiteCopy } from '../../data/site-copy';
+import { submitContactForm } from '../../lib/contact';
 import { useLanguage } from '../i18n/language-provider';
 
 const inputClassName =

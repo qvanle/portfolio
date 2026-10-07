@@ -1,7 +1,6 @@
 import ThemeProvider from 'app/components/providers/ThemeProvider';
 import classNames from 'classnames';
 import type { Metadata, Viewport } from 'next';
-import { cookies } from 'next/headers';
 import type { ReactNode } from 'react';
 import { LanguageProvider } from './components/i18n/language-provider';
 import TopRightControls from './components/layouts/top-right-controls/top-right-controls';
@@ -55,14 +54,10 @@ interface RootLayoutProps {
 	children: ReactNode;
 }
 
-export default async function RootLayout({ children }: RootLayoutProps) {
-	const cookieStore = await cookies();
-	const language =
-		cookieStore.get('site-language')?.value === 'vi' ? 'vi' : 'en';
-
+export default function RootLayout({ children }: RootLayoutProps) {
 	return (
 		<html
-			lang={language}
+			lang='en'
 			suppressHydrationWarning
 			className={classNames(mukta.className, 'scroll-smooth')}
 		>
@@ -72,7 +67,7 @@ export default async function RootLayout({ children }: RootLayoutProps) {
 					defaultTheme='light'
 					themes={['dark', 'light']}
 				>
-					<LanguageProvider initialLanguage={language}>
+					<LanguageProvider initialLanguage='en'>
 						<TopRightControls />
 						{children}
 					</LanguageProvider>

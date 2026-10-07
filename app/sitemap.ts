@@ -2,6 +2,8 @@ import type { MetadataRoute } from 'next';
 import { getAllPostRoutes } from './data/posts';
 import { siteUrl } from './lib/site-config';
 
+export const dynamic = 'force-static';
+
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
 	let posts: Awaited<ReturnType<typeof getAllPostRoutes>> = [];
 	try {

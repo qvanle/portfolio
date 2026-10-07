@@ -4,7 +4,7 @@ import Image from 'next/image';
 import Link from 'next/link';
 import portraitImage from '../../assets/portrait.jpg';
 import type { SitePost } from '../../data/posts';
-import { getSiteCopy } from '../../data/site-copy';
+import { getSiteCopy, type Language } from '../../data/site-copy';
 import Hero from '../hero/hero';
 import { useLanguage } from '../i18n/language-provider';
 import Footer from '../site/footer';
@@ -16,12 +16,12 @@ import SocialLinks from '../site/social-links';
 import ContactForm from './contact-form';
 
 interface HomePageProps {
-	featured: SitePost[];
-	latest: SitePost[];
+	posts: Record<Language, { featured: SitePost[]; latest: SitePost[] }>;
 }
 
-export default function HomePage({ featured, latest }: HomePageProps) {
+export default function HomePage({ posts }: HomePageProps) {
 	const { language } = useLanguage();
+	const { featured, latest } = posts[language];
 	const copy = getSiteCopy(language);
 
 	return (

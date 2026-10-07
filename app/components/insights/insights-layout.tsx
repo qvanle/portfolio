@@ -5,7 +5,7 @@ import { motion } from 'motion/react';
 import type { ReactNode } from 'react';
 import { useEffect, useMemo, useState } from 'react';
 import type { SitePost } from '../../data/posts';
-import { getSiteCopy } from '../../data/site-copy';
+import { getSiteCopy, type Language } from '../../data/site-copy';
 import { merryWeather } from '../../fonts';
 import { searchBlogPostIds } from '../../lib/blog-search';
 import { useLanguage } from '../i18n/language-provider';
@@ -15,7 +15,7 @@ import PostCard from '../site/post-card';
 import SectionReveal from '../site/section-reveal';
 
 interface InsightsLayoutProps {
-	posts: SitePost[];
+	posts: Record<Language, SitePost[]>;
 	children: ReactNode;
 }
 
@@ -28,10 +28,11 @@ const fadeIn = (delay: number) => ({
 });
 
 export default function InsightsLayout({
-	posts,
+	posts: postsByLanguage,
 	children,
 }: InsightsLayoutProps) {
 	const { language } = useLanguage();
+	const posts = postsByLanguage[language];
 	const copy = getSiteCopy(language);
 
 	const [searchQuery, setSearchQuery] = useState('');

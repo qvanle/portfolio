@@ -21,6 +21,7 @@ export interface SitePost {
 	body?: string;
 	styles?: string;
 	alternateSlug?: string;
+	language: Language;
 }
 
 interface BlogHeaderTranslation {
@@ -69,14 +70,24 @@ export function getBlogContentUrl() {
 	return value;
 }
 
-export async function fetchBlogIndex(): Promise<ArrayBuffer> {
-	const response = await fetch(`${getBlogContentUrl()}/index.db`, {
-		next: { revalidate: INDEX_REVALIDATE_SECONDS },
+let indexPromise: Promise<ArrayBuffer> | undefined;
+
+// The site is statically exported, so every page is rendered at build time.
+// Share one download of the index across all of them.
+export function fetchBlogIndex(): Promise<ArrayBuffer> {
+	indexPromise ??= (async () => {
+		const response = await fetch(`${getBlogContentUrl()}/index.db`, {
+			next: { revalidate: INDEX_REVALIDATE_SECONDS },
+		});
+		if (!response.ok) {
+			throw new Error(`Blog index request failed with ${response.status}`);
+		}
+		return response.arrayBuffer();
+	})().catch((error) => {
+		indexPromise = undefined;
+		throw error;
 	});
-	if (!response.ok) {
-		throw new Error(`Blog index request failed with ${response.status}`);
-	}
-	return response.arrayBuffer();
+	return indexPromise;
 }
 
 async function getSql() {
@@ -119,6 +130,7 @@ function rowToPost(row: PostRow): SitePost {
 			: undefined,
 		category: row.category || undefined,
 		alternateSlug: row.alternate_slug ?? undefined,
+		language: row.language as Language,
 	};
 }
 
@@ -330,6 +342,7 @@ function headerToPost(header: BlogHeader, language: Language): SitePost | null {
 			: undefined,
 		category: header.category || undefined,
 		alternateSlug: header[alternateLanguage]?.slug,
+		language,
 	};
 }
 

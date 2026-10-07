@@ -1,5 +1,4 @@
 import type { Metadata } from 'next';
-import { cookies } from 'next/headers';
 import HomePage from './components/home/home-page';
 import JsonLd from './components/seo/json-ld';
 import { getHomePosts } from './data/posts';
@@ -12,10 +11,7 @@ export const metadata: Metadata = {
 };
 
 export default async function Home() {
-	const cookieStore = await cookies();
-	const language =
-		cookieStore.get('site-language')?.value === 'vi' ? 'vi' : 'en';
-	const { featured, latest } = await getHomePosts(language);
+	const [en, vi] = await Promise.all([getHomePosts('en'), getHomePosts('vi')]);
 
 	return (
 		<>
@@ -37,7 +33,7 @@ export default async function Home() {
 					],
 				}}
 			/>
-			<HomePage featured={featured} latest={latest} />
+			<HomePage posts={{ en, vi }} />
 		</>
 	);
 }

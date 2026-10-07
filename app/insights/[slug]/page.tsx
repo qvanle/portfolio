@@ -1,31 +1,46 @@
 import type { Metadata } from 'next';
-import { cookies } from 'next/headers';
-import { notFound, permanentRedirect } from 'next/navigation';
+import { notFound } from 'next/navigation';
 import PostModal from '../../components/insights/post-modal';
 import JsonLd from '../../components/seo/json-ld';
-import { getInsightsPosts, getPostBySlug } from '../../data/posts';
+import {
+	getAllPostRoutes,
+	getInsightsPosts,
+	getPostBySlug,
+} from '../../data/posts';
 import { siteName, siteUrl } from '../../lib/site-config';
 
 interface PageProps {
 	params: Promise<{ slug: string }>;
 }
 
-async function selectedLanguage() {
-	const cookieStore = await cookies();
-	return cookieStore.get('site-language')?.value === 'vi' ? 'vi' : 'en';
+export const dynamicParams = false;
+
+export async function generateStaticParams() {
+	const routes = await getAllPostRoutes();
+	return routes.map(({ slug }) => ({ slug }));
+}
+
+// Every slug belongs to exactly one language; the page renders that translation.
+async function loadPost(slug: string) {
+	const routes = await getAllPostRoutes();
+	const route = routes.find((candidate) => candidate.slug === slug);
+	if (!route) return null;
+	const post = await getPostBySlug(slug, route.language);
+	return post ? { post, language: route.language } : null;
 }
 
 export async function generateMetadata({
 	params,
 }: PageProps): Promise<Metadata> {
-	const [{ slug }, language] = await Promise.all([params, selectedLanguage()]);
-	const post = await getPostBySlug(slug, language);
-	if (!post) {
+	const { slug } = await params;
+	const loaded = await loadPost(slug);
+	if (!loaded) {
 		return {
 			title: 'Not Found',
 			robots: { index: false },
 		};
 	}
+	const { post, language } = loaded;
 	const alternateLanguage = language === 'en' ? 'vi' : 'en';
 	return {
 		title: post.title,
@@ -62,16 +77,12 @@ export async function generateMetadata({
 
 export default async function Page({ params }: PageProps) {
 	const { slug } = await params;
-	const language = await selectedLanguage();
+	const loaded = await loadPost(slug);
 
-	const post = await getPostBySlug(slug, language);
-
-	if (!post) {
+	if (!loaded) {
 		notFound();
 	}
-	if (post.slug !== slug) {
-		permanentRedirect(`/insights/${post.slug}`);
-	}
+	const { post, language } = loaded;
 
 	const allPosts = await getInsightsPosts(language);
 	const others = allPosts.filter((p) => p.slug !== slug);
