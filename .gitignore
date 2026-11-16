@@ -42,3 +42,6 @@ yarn-error.log*
 .contentlayer
 .env*.local
 /public/blog-index.db
+
+# TypeScript incremental build cache
+tsconfig.tsbuildinfo
